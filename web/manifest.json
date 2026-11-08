@@ -1,0 +1,11 @@
+{
+  "name": "F.R.I.D.A.Y. ",
+  "short_name": "FRIDAY",
+  "description": "Aris Industries ",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#05070e",
+  "theme_color": "#8b5cf6",
+  "orientation": "any"
+}
