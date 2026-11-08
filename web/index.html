@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F.R.I.D.A.Y. // Social AI Hub</title>
+  <title>JEE Class 11 Physics // Formula & Study Portal</title>
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="/friday_logo.png" />
   <meta name="theme-color" content="#8b5cf6" />
   <style>
     :root {
@@ -30,7 +31,23 @@
       align-items: center;
     }
 
-    /* AUTH SCREEN (Instagram Style) */
+    /* CAMOUFLAGE JEE STUDY OVERLAY (PANIC LOCK) */
+    .jee-decoy {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      color: #1e293b;
+      z-index: 99999;
+      padding: 32px;
+      overflow-y: auto;
+    }
+    .jee-decoy h1 { font-size: 22px; color: #0f172a; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 18px; }
+    .jee-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 14px; }
+    .jee-card h3 { font-size: 16px; color: #1d4ed8; margin-bottom: 6px; }
+    .jee-card p { font-size: 14px; line-height: 1.6; }
+
+    /* STEALTH GATEKEEPER AUTH SCREEN */
     .auth-container {
       width: 100%;
       max-width: 400px;
@@ -41,26 +58,24 @@
       box-shadow: 0 0 40px rgba(139, 92, 246, 0.18);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
+    .auth-logo-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .auth-img { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 20px var(--accent); }
     .auth-logo {
-      text-align: center;
-      font-size: 26px;
-      font-weight: 900;
-      letter-spacing: 3px;
+      font-size: 26px; font-weight: 900; letter-spacing: 3px;
       background: linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .auth-sub { text-align: center; font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
+    .auth-sub { text-align: center; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
     .auth-tabs { display: flex; background: var(--bg-card); border-radius: 10px; padding: 4px; }
     .auth-tab {
-      flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 700;
+      flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 800;
       border-radius: 8px; cursor: pointer; color: var(--text-dim); border: none; background: transparent;
     }
     .auth-tab.active { background: var(--accent); color: #fff; }
     .auth-input {
-      width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+      width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
       background: var(--bg-card); color: var(--text-main); font-size: 14px; outline: none;
     }
     .auth-input:focus { border-color: var(--cyan); }
@@ -71,53 +86,45 @@
     }
     .auth-error { color: #f87171; font-size: 12px; text-align: center; display: none; }
 
-    /* MAIN APP SHELL */
-    .app-shell {
-      display: none;
-      width: 100vw;
-      height: 100vh;
-      background: var(--bg-void);
-    }
-
-    /* SIDEBAR */
+    /* MAIN APP */
+    .app-shell { display: none; width: 100vw; height: 100vh; background: var(--bg-void); }
     .sidebar {
-      width: 340px;
-      background: var(--bg-panel);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
+      width: 350px; background: var(--bg-panel); border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
     }
     .profile-bar {
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
+    .me-info-row { display: flex; justify-content: space-between; align-items: center; }
     .me-info { display: flex; align-items: center; gap: 10px; }
     .avatar {
-      width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0;
-      position: relative;
+      width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0; position: relative;
     }
     .online-dot {
       position: absolute; bottom: 0; right: 0; width: 11px; height: 11px;
       background: var(--emerald); border: 2px solid var(--bg-panel); border-radius: 50%;
     }
-    .portal-links { display: flex; gap: 6px; }
-    .mini-portal {
-      font-size: 10px; padding: 5px 8px; border-radius: 6px; text-decoration: none;
-      font-weight: 700; border: 1px solid var(--border); color: var(--cyan);
-    }
 
-    /* STORIES BAR (Instagram Style) */
+    .sys-actions { display: flex; gap: 6px; width: 100%; flex-wrap: wrap; }
+    .action-btn {
+      flex: 1; font-size: 11px; padding: 7px 8px; border-radius: 8px; text-decoration: none;
+      font-weight: 800; text-align: center; border: 1px solid var(--border); cursor: pointer;
+    }
+    .btn-download { background: var(--cyan); color: #000; border-color: var(--cyan); display: none; }
+    .btn-panic { background: rgba(239, 68, 68, 0.16); color: #f87171; border-color: #ef4444; }
+    .btn-link { background: rgba(139, 92, 246, 0.08); color: var(--cyan); }
+    .btn-exit { background: transparent; color: var(--text-dim); }
+
     .stories-bar {
       display: flex; gap: 12px; padding: 12px 16px; overflow-x: auto;
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
+    .stories-bar::-webkit-scrollbar { display: none; }
     .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
     .story-ring {
-      width: 52px; height: 52px; border-radius: 50%; padding: 2px;
+      width: 50px; height: 50px; border-radius: 50%; padding: 2px;
       background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
       display: flex; align-items: center; justify-content: center;
     }
@@ -127,7 +134,6 @@
     }
     .story-name { font-size: 11px; color: var(--text-dim); max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* SEARCH & DM LIST */
     .search-box { padding: 10px 14px; }
     .search-input {
       width: 100%; padding: 9px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);
@@ -147,7 +153,6 @@
     }
     .user-sub { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* CHAT PANE */
     .chat-pane { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at top, #0f162c 0%, var(--bg-void) 70%); }
     .chat-header {
       padding: 13px 20px; background: rgba(11, 15, 28, 0.92); border-bottom: 1px solid var(--border);
@@ -170,7 +175,7 @@
       border-left: 3px solid var(--cyan); padding: 4px 10px; border-radius: 6px; margin-bottom: 3px;
     }
     .bubble {
-      padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5;
+      padding: 10px 14px; border-radius: 16px; font-size: 14.5px; line-height: 1.5;
       white-space: pre-wrap; word-wrap: break-word; cursor: pointer; position: relative;
     }
     .msg-wrap.me .bubble {
@@ -200,7 +205,6 @@
     .msg-wrap:hover .quick-actions { display: flex; }
     .act-btn { background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 13px; }
 
-    /* COMPOSER */
     .composer-wrap { padding: 12px 18px; background: var(--bg-panel); border-top: 1px solid var(--border); }
     .reply-banner {
       display: none; justify-content: space-between; align-items: center;
@@ -210,15 +214,14 @@
     .composer-row { display: flex; gap: 10px; align-items: center; }
     .msg-input {
       flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border);
-      background: var(--bg-card); color: var(--text-main); font-size: 14px; outline: none;
+      background: var(--bg-card); color: var(--text-main); font-size: 14.5px; outline: none;
     }
     .send-btn {
-      padding: 11px 20px; border-radius: 24px; border: none;
+      padding: 11px 22px; border-radius: 24px; border: none;
       background: linear-gradient(90deg, #06b6d4, #8b5cf6);
-      color: #fff; font-weight: 800; font-size: 13px; cursor: pointer;
+      color: #fff; font-weight: 800; font-size: 13.5px; cursor: pointer;
     }
 
-    /* STORY MODAL */
     .modal {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
       z-index: 999; justify-content: center; align-items: center; padding: 20px;
@@ -239,63 +242,95 @@
 </head>
 <body>
 
-  <!-- AUTH SCREEN -->
-  <div class="auth-container" id="authBox">
-    <div class="auth-logo">F.R.I.D.A.Y.</div>
-    <div class="auth-sub">ARIS SOCIAL + GEMINI-CLASS AI NETWORK</div>
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tabLogin" onclick="switchAuth('login')">LOG IN</button>
-      <button class="auth-tab" id="tabReg" onclick="switchAuth('register')">CREATE ACCOUNT</button>
+  <!-- JEE STUDY DECOY SCREEN (ACTIVATES ON ESC OR PANIC LOCK) -->
+  <div class="jee-decoy" id="jeeDecoy">
+    <h1>Class 11 JEE Physics — Rotational Dynamics & Gravitation Formula Revision</h1>
+    <div class="jee-card">
+      <h3>1. Moment of Inertia (Standard Bodies)</h3>
+      <p>• Uniform Rod (length L, about center): I = ML² / 12 | (about one end): I = ML² / 3<br>
+         • Solid Cylinder / Disc (radius R): I = MR² / 2<br>
+         • Solid Sphere (radius R): I = 2MR² / 5 | Hollow Sphere: I = 2MR² / 3</p>
     </div>
-    <input class="auth-input" id="authUser" placeholder="@username (e.g. mayank)" />
-    <input class="auth-input" id="authName" placeholder="Display Name (e.g. Mayank Tiwari)" style="display:none;" />
-    <input class="auth-input" id="authBio" placeholder="Bio (e.g. Founder @ Aris Industries)" style="display:none;" />
-    <input class="auth-input" id="authPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')submitAuth()" />
-    <div class="auth-error" id="authError"></div>
-    <button class="btn-primary" onclick="submitAuth()" id="authBtn">ENTER F.R.I.D.A.Y.</button>
+    <div class="jee-card">
+      <h3>2. Orbital & Escape Velocity</h3>
+      <p>• Orbital Velocity near Earth: v₀ = √(GM / R) ≈ 7.92 km/s<br>
+         • Escape Velocity: vₑ = √(2GM / R) = √2 · v₀ ≈ 11.2 km/s<br>
+         • Kepler's Third Law: T² ∝ r³</p>
+    </div>
+    <div class="jee-card">
+      <h3>3. Work, Power & Energy</h3>
+      <p>• Work-Energy Theorem: W_all = ΔK = K_f - K_i<br>
+         • Conservative Force: F = -dU/dr</p>
+    </div>
+    <button onclick="unlockFromDecoy()" style="margin-top:20px;padding:8px 14px;background:#e2e8f0;border:none;border-radius:6px;color:#64748b;font-size:12px;cursor:pointer;">Refresh Notes</button>
   </div>
 
-  <!-- MAIN SOCIAL APP -->
+  <!-- STEALTH GATEKEEPER LOGIN SCREEN -->
+  <div class="auth-container" id="authBox">
+    <div class="auth-logo-wrap">
+      <img src="/friday_logo.png" class="auth-img" alt="FRIDAY Logo" />
+      <div class="auth-logo">F.R.I.D.A.Y.</div>
+      <div class="auth-sub">PRIVATE ENCRYPTED VAULT // AUTHORIZED ACCESS ONLY</div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuth('login')">UNLOCK VAULT</button>
+      <button class="auth-tab" id="tabReg" onclick="switchAuth('register')">NEW ACCOUNT</button>
+    </div>
+
+    <input class="auth-input" id="authMaster" type="password" placeholder="🔑 Secret Gatekeeper Code" />
+    <input class="auth-input" id="authUser" placeholder="@username (e.g. mayank)" />
+    <input class="auth-input" id="authName" placeholder="Display Name" style="display:none;" />
+    <input class="auth-input" id="authBio" placeholder="Private Status" style="display:none;" />
+    <input class="auth-input" id="authPass" type="password" placeholder="Account Password" onkeydown="if(event.key==='Enter')submitAuth()" />
+
+    <div class="auth-error" id="authError"></div>
+    <button class="btn-primary" onclick="submitAuth()" id="authBtn">VERIFY & ENTER</button>
+  </div>
+
+  <!-- MAIN PRIVATE SOCIAL APP -->
   <div class="app-shell" id="appShell">
     <aside class="sidebar">
       <div class="profile-bar">
-        <div class="me-info">
-          <div class="avatar" id="meAvatar">M<div class="online-dot"></div></div>
-          <div>
-            <div style="font-weight:800;font-size:14px;" id="meDisplayName">Mayank</div>
-            <div style="font-size:11px;color:var(--cyan);" id="meHandle">@mayank</div>
+        <div class="me-info-row">
+          <div class="me-info">
+            <div class="avatar" id="meAvatar">M<div class="online-dot"></div></div>
+            <div>
+              <div style="font-weight:800;font-size:14px;" id="meDisplayName">User</div>
+              <div style="font-size:11px;color:var(--cyan);" id="meHandle">@handle</div>
+            </div>
           </div>
+          <button class="action-btn btn-panic" style="flex:0;padding:6px 10px;" onclick="activatePanicLock()" title="Press ESC anytime">🔒 HIDE (ESC)</button>
         </div>
-        <div class="portal-links">
-          <a class="mini-portal" href="https://titan-aris.onrender.com/" target="_blank">TITAN</a>
-          <a class="mini-portal" href="https://project-omega-m1.onrender.com/" target="_blank">OMEGA</a>
-          <button class="mini-portal" style="background:none;cursor:pointer;color:#f87171;" onclick="logout()">EXIT</button>
+
+        <div class="sys-actions">
+          <button class="action-btn btn-download" id="installBtn" onclick="installDesktopApp()">⬇ INSTALL APP</button>
+          <a class="action-btn btn-link" href="https://titan-aris.onrender.com/" target="_blank">TITAN</a>
+          <a class="action-btn btn-link" href="https://project-omega-m1.onrender.com/" target="_blank">OMEGA</a>
+          <button class="action-btn btn-exit" onclick="logout()">LOCK</button>
         </div>
       </div>
 
-      <!-- 24H STORIES -->
       <div class="stories-bar" id="storiesBar"></div>
 
-      <!-- SEARCH USERS -->
       <div class="search-box">
-        <input class="search-input" id="userSearch" placeholder="Search @username or name..." oninput="loadUsers()" />
+        <input class="search-input" id="userSearch" placeholder="Search @username..." oninput="loadUsers()" />
       </div>
 
-      <!-- DM THREADS -->
       <div class="user-list" id="userList"></div>
     </aside>
 
     <main class="chat-pane">
       <header class="chat-header">
         <div class="peer-header">
-          <button onclick="backToList()" style="background:none;border:none;color:var(--cyan);font-size:18px;cursor:pointer;margin-right:4px;">←</button>
+          <button onclick="backToList()" style="background:none;border:none;color:var(--cyan);font-size:18px;cursor:pointer;margin-right:6px;">←</button>
           <div class="avatar" id="peerAvatar" style="background:#06b6d4;">F</div>
           <div>
             <div style="font-weight:800;font-size:15px;" id="peerName">F.R.I.D.A.Y. AI</div>
             <div class="peer-status" id="peerStatus">Online • Always Active</div>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--text-dim);">Tip: Type <strong>@friday</strong> in any DM</div>
+        <button onclick="activatePanicLock()" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#f87171;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;">🔒 STEALTH</button>
       </header>
 
       <div class="messages-area" id="messagesArea"></div>
@@ -306,7 +341,7 @@
           <button onclick="clearReply()" style="background:none;border:none;color:#f87171;cursor:pointer;font-weight:bold;">✕</button>
         </div>
         <div class="composer-row">
-          <input class="msg-input" id="msgInput" placeholder="Message or type @friday..." oninput="handleTyping()" onkeydown="if(event.key==='Enter')sendMsg()" />
+          <input class="msg-input" id="msgInput" placeholder="Write private message or @friday..." oninput="handleTyping()" onkeydown="if(event.key==='Enter')sendMsg()" />
           <button class="send-btn" onclick="sendMsg()">SEND</button>
         </div>
       </div>
@@ -332,6 +367,45 @@
     let ws = null;
     let typingTimeout = null;
     let replyToSnippet = "";
+    let deferredPrompt = null;
+
+    // PANIC LOCK ON ESCAPE KEY
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        activatePanicLock();
+      }
+    });
+
+    function activatePanicLock() {
+      sessionStorage.removeItem("friday_user");
+      if (ws) ws.close();
+      document.getElementById("appShell").style.display = "none";
+      document.getElementById("authBox").style.display = "none";
+      document.getElementById("jeeDecoy").style.display = "block";
+    }
+
+    function unlockFromDecoy() {
+      document.getElementById("jeeDecoy").style.display = "none";
+      document.getElementById("authBox").style.display = "flex";
+    }
+
+    // PWA INSTALL BUTTON
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById("installBtn");
+      if (btn) btn.style.display = "inline-block";
+    });
+
+    async function installDesktopApp() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        document.getElementById("installBtn").style.display = "none";
+      }
+      deferredPrompt = null;
+    }
 
     function switchAuth(mode) {
       authMode = mode;
@@ -339,11 +413,12 @@
       document.getElementById("tabReg").classList.toggle("active", mode === "register");
       document.getElementById("authName").style.display = mode === "register" ? "block" : "none";
       document.getElementById("authBio").style.display = mode === "register" ? "block" : "none";
-      document.getElementById("authBtn").textContent = mode === "login" ? "ENTER F.R.I.D.A.Y." : "CREATE ACCOUNT";
+      document.getElementById("authBtn").textContent = mode === "login" ? "VERIFY & ENTER" : "CREATE PRIVATE ACCOUNT";
       document.getElementById("authError").style.display = "none";
     }
 
     async function submitAuth() {
+      const master_code = document.getElementById("authMaster").value.trim();
       const username = document.getElementById("authUser").value.trim();
       const password = document.getElementById("authPass").value.trim();
       const display_name = document.getElementById("authName").value.trim();
@@ -359,13 +434,13 @@
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, display_name, bio, avatar_color })
+          body: JSON.stringify({ master_code, username, password, display_name, bio, avatar_color })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Authentication failed");
 
         currentUser = data;
-        localStorage.setItem("friday_user", JSON.stringify(data));
+        sessionStorage.setItem("friday_user", JSON.stringify(data));
         bootApp();
       } catch (e) {
         errBox.textContent = e.message;
@@ -374,7 +449,7 @@
     }
 
     function logout() {
-      localStorage.removeItem("friday_user");
+      sessionStorage.removeItem("friday_user");
       if (ws) ws.close();
       location.reload();
     }
@@ -455,7 +530,9 @@
         }
       };
 
-      ws.onclose = () => setTimeout(connectWS, 3000);
+      ws.onclose = () => {
+        if (sessionStorage.getItem("friday_user")) setTimeout(connectWS, 3000);
+      };
     }
 
     async function loadUsers() {
@@ -490,7 +567,7 @@
 
       const st = document.getElementById("peerStatus");
       if (activePeer.username === "friday") {
-        st.textContent = "Online • Gemini-Class Neural Core";
+        st.textContent = "Online • Private Neural Co-Pilot";
         st.className = "peer-status";
       } else if (activePeer.online) {
         st.textContent = "Online";
@@ -603,7 +680,6 @@
       clearReply();
     }
 
-    /* 24-HOUR STORIES */
     async function loadStories() {
       const res = await fetch("/api/stories");
       const data = await res.json();
@@ -613,7 +689,7 @@
           <div class="story-ring" style="background:var(--cyan);">
             <div class="story-inner" style="color:var(--cyan);font-size:20px;">+</div>
           </div>
-          <div class="story-name">Your Story</div>
+          <div class="story-name">Your Status</div>
         </div>
       `;
       data.stories.forEach(s => {
@@ -631,7 +707,7 @@
     }
 
     async function createStory() {
-      const txt = prompt("Post a 24-Hour Status / Story:");
+      const txt = prompt("Post a Private 24-Hour Status:");
       if (!txt || !txt.trim()) return;
       const grads = [
         "linear-gradient(135deg, #6366f1, #ec4899)",
@@ -658,8 +734,7 @@
       document.getElementById("storyModal").style.display = "flex";
     }
 
-    // Auto-restore session
-    const saved = localStorage.getItem("friday_user");
+    const saved = sessionStorage.getItem("friday_user");
     if (saved) {
       currentUser = JSON.parse(saved);
       bootApp();
