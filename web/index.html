@@ -15,9 +15,8 @@
       --border: rgba(236, 72, 153, 0.32);
       --accent: #ec4899;
       --pink-bright: #f43f5e;
-      --pink-glow: rgba(236, 72, 153, 0.25);
       --emerald: #10b981;
-      --wa-blue: #00b0ff;
+      --cyan: #00f0ff;
       --text-main: #fdf2f8;
       --text-dim: #a18898;
     }
@@ -34,14 +33,8 @@
 
     /* CAMOUFLAGE JEE STUDY OVERLAY (PANIC LOCK) */
     .jee-decoy {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: #ffffff;
-      color: #1e293b;
-      z-index: 99999;
-      padding: 32px;
-      overflow-y: auto;
+      display: none; position: fixed; inset: 0; background: #ffffff; color: #1e293b;
+      z-index: 99999; padding: 32px; overflow-y: auto;
     }
     .jee-decoy h1 { font-size: 22px; color: #0f172a; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 18px; }
     .jee-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 14px; }
@@ -50,16 +43,9 @@
 
     /* STEALTH GATEKEEPER AUTH SCREEN */
     .auth-container {
-      width: 100%;
-      max-width: 400px;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px;
-      box-shadow: 0 0 45px rgba(236, 72, 153, 0.22);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      width: 100%; max-width: 400px; background: var(--bg-panel); border: 1px solid var(--border);
+      border-radius: 18px; padding: 28px; box-shadow: 0 0 45px rgba(236, 72, 153, 0.22);
+      display: flex; flex-direction: column; gap: 12px;
     }
     .auth-logo-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .auth-img { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 24px var(--accent); border: 2px solid var(--accent); }
@@ -79,12 +65,10 @@
       width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
       background: var(--bg-card); color: var(--text-main); font-size: 14px; outline: none;
     }
-    .auth-input:focus { border-color: #ff69b4; box-shadow: 0 0 12px rgba(236, 72, 153, 0.2); }
     .btn-primary {
       width: 100%; padding: 12px; border-radius: 10px; border: none;
       background: linear-gradient(90deg, #db2777, #ec4899, #f43f5e);
       color: #fff; font-weight: 800; font-size: 14px; cursor: pointer;
-      box-shadow: 0 4px 18px rgba(236, 72, 153, 0.35);
     }
     .auth-error { color: #fb7185; font-size: 12px; text-align: center; display: none; }
 
@@ -103,20 +87,19 @@
     .avatar {
       width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
       justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0; position: relative;
-      box-shadow: 0 0 12px rgba(236, 72, 153, 0.3);
     }
     .online-dot {
       position: absolute; bottom: 0; right: 0; width: 11px; height: 11px;
       background: var(--emerald); border: 2px solid var(--bg-panel); border-radius: 50%;
     }
-
     .sys-actions { display: flex; gap: 6px; width: 100%; flex-wrap: wrap; }
     .action-btn {
-      flex: 1; font-size: 11px; padding: 7px 8px; border-radius: 8px; text-decoration: none;
+      flex: 1; font-size: 11px; padding: 7px 6px; border-radius: 8px; text-decoration: none;
       font-weight: 800; text-align: center; border: 1px solid var(--border); cursor: pointer;
     }
     .btn-download { background: var(--accent); color: #fff; border-color: var(--accent); display: none; }
     .btn-panic { background: rgba(244, 63, 94, 0.18); color: #fda4af; border-color: #f43f5e; }
+    .btn-alpha { background: rgba(0, 240, 255, 0.14); color: var(--cyan); border-color: var(--cyan); }
     .btn-link { background: rgba(236, 72, 153, 0.1); color: #f472b6; }
     .btn-exit { background: transparent; color: var(--text-dim); }
 
@@ -166,6 +149,12 @@
     .peer-status.offline { color: var(--text-dim); }
     .peer-status.typing { color: #f472b6; font-weight: 700; }
 
+    .header-btns { display: flex; gap: 8px; align-items: center; }
+    .alpha-call-trigger {
+      background: rgba(0, 240, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan);
+      padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;
+    }
+
     .messages-area {
       flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
     }
@@ -184,7 +173,6 @@
     .msg-wrap.me .bubble {
       background: linear-gradient(135deg, #be185d, #ec4899);
       color: #ffffff; border-bottom-right-radius: 4px;
-      box-shadow: 0 3px 14px rgba(236, 72, 153, 0.28);
     }
     .msg-wrap.them .bubble {
       background: #140d1a; border: 1px solid rgba(236, 72, 153, 0.25);
@@ -196,19 +184,8 @@
     .msg-footer {
       display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); margin-top: 3px;
     }
-
-    /* WHATSAPP-STYLE READ RECEIPTS (GREY SENT/DELIVERED -> BRIGHT BLUE SEEN) */
-    .ticks {
-      font-weight: 900;
-      font-size: 13px;
-      letter-spacing: -1.5px;
-      color: #9ca3af;
-      transition: color 0.2s ease, text-shadow 0.2s ease;
-    }
-    .ticks.seen {
-      color: #00b0ff !important;
-      text-shadow: 0 0 8px rgba(0, 176, 255, 0.65);
-    }
+    .ticks { font-weight: 900; font-size: 13px; letter-spacing: -1.5px; color: #9ca3af; }
+    .ticks.seen { color: #00b0ff !important; text-shadow: 0 0 8px rgba(0, 176, 255, 0.65); }
 
     .reaction-pill {
       background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px;
@@ -232,12 +209,10 @@
       flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border);
       background: var(--bg-card); color: var(--text-main); font-size: 14.5px; outline: none;
     }
-    .msg-input:focus { border-color: #f472b6; }
     .send-btn {
       padding: 11px 22px; border-radius: 24px; border: none;
       background: linear-gradient(90deg, #db2777, #ec4899);
       color: #fff; font-weight: 800; font-size: 13.5px; cursor: pointer;
-      box-shadow: 0 2px 14px rgba(236, 72, 153, 0.35);
     }
 
     .modal {
@@ -246,8 +221,7 @@
     }
     .story-card {
       width: 100%; max-width: 360px; height: 480px; border-radius: 20px;
-      padding: 24px; display: flex; flex-direction: column; justify-content: space-between;
-      text-align: center; box-shadow: 0 0 40px rgba(236, 72, 153, 0.4);
+      padding: 24px; display: flex; flex-direction: column; justify-content: space-between; text-align: center;
     }
 
     @media (max-width: 768px) {
@@ -275,11 +249,6 @@
          • Escape Velocity: vₑ = √(2GM / R) = √2 · v₀ ≈ 11.2 km/s<br>
          • Kepler's Third Law: T² ∝ r³</p>
     </div>
-    <div class="jee-card">
-      <h3>3. Work, Power & Energy</h3>
-      <p>• Work-Energy Theorem: W_all = ΔK = K_f - K_i<br>
-         • Conservative Force: F = -dU/dr</p>
-    </div>
     <button onclick="unlockFromDecoy()" style="margin-top:20px;padding:8px 14px;background:#e2e8f0;border:none;border-radius:6px;color:#64748b;font-size:12px;cursor:pointer;">Refresh Notes</button>
   </div>
 
@@ -297,7 +266,7 @@
     </div>
 
     <input class="auth-input" id="authMaster" type="password" placeholder="🔑 Secret Gatekeeper Code" />
-    <input class="auth-input" id="authUser" placeholder="@username (e.g. mayank)" />
+    <input class="auth-input" id="authUser" placeholder="@username" />
     <input class="auth-input" id="authName" placeholder="Display Name" style="display:none;" />
     <input class="auth-input" id="authBio" placeholder="Private Status" style="display:none;" />
     <input class="auth-input" id="authPass" type="password" placeholder="Account Password" onkeydown="if(event.key==='Enter')submitAuth()" />
@@ -312,7 +281,7 @@
       <div class="profile-bar">
         <div class="me-info-row">
           <div class="me-info">
-            <div class="avatar" id="meAvatar">M<div class="online-dot"></div></div>
+            <div class="avatar" id="meAvatar">U<div class="online-dot"></div></div>
             <div>
               <div style="font-weight:800;font-size:14px;" id="meDisplayName">User</div>
               <div style="font-size:11px;color:#f472b6;" id="meHandle">@handle</div>
@@ -322,7 +291,8 @@
         </div>
 
         <div class="sys-actions">
-          <button class="action-btn btn-download" id="installBtn" onclick="installDesktopApp()">⬇ INSTALL APP</button>
+          <button class="action-btn btn-download" id="installBtn" onclick="installDesktopApp()">⬇ APP</button>
+          <button class="action-btn btn-alpha" onclick="launchAlphaApp()">◈ A.L.P.H.A.</button>
           <a class="action-btn btn-link" href="https://titan-aris.onrender.com/" target="_blank">TITAN</a>
           <a class="action-btn btn-link" href="https://project-omega-m1.onrender.com/" target="_blank">OMEGA</a>
           <button class="action-btn btn-exit" onclick="logout()">LOCK</button>
@@ -348,7 +318,10 @@
             <div class="peer-status" id="peerStatus">Online • Always Active</div>
           </div>
         </div>
-        <button onclick="activatePanicLock()" style="background:rgba(244,63,94,0.18);border:1px solid #f43f5e;color:#fda4af;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;">🔒 STEALTH</button>
+        <div class="header-btns">
+          <button class="alpha-call-trigger" onclick="launchAlphaApp()" title="Launch A.L.P.H.A. Video/Voice Call">📹 A.L.P.H.A. CALL</button>
+          <button onclick="activatePanicLock()" style="background:rgba(244,63,94,0.18);border:1px solid #f43f5e;color:#fda4af;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;">🔒 STEALTH</button>
+        </div>
       </header>
 
       <div class="messages-area" id="messagesArea"></div>
@@ -388,10 +361,15 @@
     let deferredPrompt = null;
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        activatePanicLock();
-      }
+      if (e.key === "Escape") activatePanicLock();
     });
+
+    function launchAlphaApp() {
+      const room = activePeer && activePeer.username !== "friday"
+        ? [currentUser.username, activePeer.username].sort().join("-") + "-01"
+        : "aris-sync-01";
+      window.open(`https://alpha-aris.onrender.com/?room=${encodeURIComponent(room)}&install=1`, "_blank");
+    }
 
     function activatePanicLock() {
       sessionStorage.removeItem("friday_user");
@@ -417,9 +395,7 @@
       if (!deferredPrompt) return;
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        document.getElementById("installBtn").style.display = "none";
-      }
+      if (outcome === "accepted") document.getElementById("installBtn").style.display = "none";
       deferredPrompt = null;
     }
 
@@ -443,18 +419,14 @@
       errBox.style.display = "none";
 
       const endpoint = authMode === "login" ? "/api/login" : "/api/register";
-      const colors = ["#ec4899", "#db2777", "#f43f5e", "#e879f9", "#be185d"];
-      const avatar_color = colors[Math.floor(Math.random() * colors.length)];
-
       try {
         const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ master_code, username, password, display_name, bio, avatar_color })
+          body: JSON.stringify({ master_code, username, password, display_name, bio, avatar_color: "#ec4899" })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.detail || "Authentication failed");
-
         currentUser = data;
         sessionStorage.setItem("friday_user", JSON.stringify(data));
         bootApp();
@@ -497,10 +469,8 @@
     function connectWS() {
       const proto = location.protocol === "https:" ? "wss:" : "ws:";
       ws = new WebSocket(`${proto}//${location.host}/ws/${currentUser.username}`);
-
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-
         if (data.type === "presence") {
           loadUsers();
           if (activePeer && data.username === activePeer.username) {
@@ -511,44 +481,28 @@
         } else if (data.type === "typing") {
           if (activePeer && (data.from === activePeer.username || (data.from === "friday" && activePeer.username === "friday"))) {
             const st = document.getElementById("peerStatus");
-            if (data.is_typing) {
-              st.textContent = "typing...";
-              st.className = "peer-status typing";
-            } else {
-              updatePeerHeader();
-            }
+            if (data.is_typing) { st.textContent = "typing..."; st.className = "peer-status typing"; }
+            else updatePeerHeader();
           }
         } else if (data.type === "seen_ack") {
           if (activePeer && data.by === activePeer.username) {
-            document.querySelectorAll(".ticks").forEach(el => {
-              el.textContent = "✓✓";
-              el.classList.add("seen");
-            });
+            document.querySelectorAll(".ticks").forEach(el => { el.textContent = "✓✓"; el.classList.add("seen"); });
           }
         } else if (data.type === "reaction") {
           const pill = document.getElementById(`react-${data.msg_id}`);
-          if (pill) {
-            pill.textContent = data.emoji;
-            pill.style.display = "inline-block";
-          }
+          if (pill) { pill.textContent = data.emoji; pill.style.display = "inline-block"; }
         } else if (data.type === "new_message") {
           const isRelevant =
             (data.sender === currentUser.username && data.receiver === activePeer.username) ||
             (data.sender === activePeer.username && data.receiver === currentUser.username) ||
             (data.sender === "friday" && (activePeer.username === "friday" || data.receiver === currentUser.username || data.receiver === activePeer.username));
-
           if (isRelevant) {
             renderMessage(data);
-            if (data.sender === activePeer.username) {
-              ws.send(JSON.stringify({ type: "seen", peer: activePeer.username }));
-            }
+            if (data.sender === activePeer.username) ws.send(JSON.stringify({ type: "seen", peer: activePeer.username }));
           }
         }
       };
-
-      ws.onclose = () => {
-        if (sessionStorage.getItem("friday_user")) setTimeout(connectWS, 3000);
-      };
+      ws.onclose = () => { if (sessionStorage.getItem("friday_user")) setTimeout(connectWS, 3000); };
     }
 
     async function loadUsers() {
@@ -557,7 +511,6 @@
       const data = await res.json();
       const list = document.getElementById("userList");
       list.innerHTML = "";
-
       data.users.forEach(u => {
         const row = document.createElement("div");
         row.className = "user-row" + (activePeer && activePeer.username === u.username ? " active" : "");
@@ -581,18 +534,10 @@
       const av = document.getElementById("peerAvatar");
       av.style.background = activePeer.username === "friday" ? "#db2777" : "#ec4899";
       av.textContent = activePeer.display_name[0].toUpperCase();
-
       const st = document.getElementById("peerStatus");
-      if (activePeer.username === "friday") {
-        st.textContent = "Online • Private Neural Co-Pilot";
-        st.className = "peer-status";
-      } else if (activePeer.online) {
-        st.textContent = "Online";
-        st.className = "peer-status";
-      } else {
-        st.textContent = formatLastSeen(activePeer.last_seen);
-        st.className = "peer-status offline";
-      }
+      if (activePeer.username === "friday") { st.textContent = "Online • Private Neural Co-Pilot"; st.className = "peer-status"; }
+      else if (activePeer.online) { st.textContent = "Online"; st.className = "peer-status"; }
+      else { st.textContent = formatLastSeen(activePeer.last_seen); st.className = "peer-status offline"; }
     }
 
     async function openChat(userObj) {
@@ -600,30 +545,22 @@
       document.getElementById("appShell").classList.add("in-chat");
       updatePeerHeader();
       loadUsers();
-
       const res = await fetch(`/api/messages/${currentUser.username}/${userObj.username}`);
       const data = await res.json();
       const area = document.getElementById("messagesArea");
       area.innerHTML = "";
       data.messages.forEach(renderMessage);
-
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "seen", peer: userObj.username }));
-      }
+      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "seen", peer: userObj.username }));
     }
 
-    function backToList() {
-      document.getElementById("appShell").classList.remove("in-chat");
-    }
+    function backToList() { document.getElementById("appShell").classList.remove("in-chat"); }
 
     function renderMessage(m) {
       const area = document.getElementById("messagesArea");
       const isMe = m.sender === currentUser.username;
       const isAi = m.sender === "friday" || m.is_ai === 1;
-
       const wrap = document.createElement("div");
       wrap.className = `msg-wrap ${isMe ? "me" : "them"} ${isAi ? "ai" : ""}`;
-
       const timeStr = new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       let tickHtml = "";
       if (isMe) {
@@ -631,10 +568,8 @@
         const seenCls = m.status === "seen" ? "seen" : "";
         tickHtml = `<span class="ticks ${seenCls}">${tickSym}</span>`;
       }
-
       const quoteHtml = m.reply_to ? `<div class="reply-quote">↪ ${escapeHtml(m.reply_to)}</div>` : "";
       const reactStyle = m.reaction ? "inline-block" : "none";
-
       wrap.innerHTML = `
         ${quoteHtml}
         <div class="bubble" ondblclick="sendReact('${m.id}', '❤️')">${escapeHtml(m.content)}</div>
@@ -645,54 +580,26 @@
           <button class="act-btn" onclick="sendReact('${m.id}', '😂')">😂</button>
           <button class="act-btn" onclick="sendReact('${m.id}', '🔥')">🔥</button>
           <button class="act-btn" onclick="setReply(${JSON.stringify(m.content.slice(0, 60))})">↩ Reply</button>
-        </div>
-      `;
+        </div>`;
       area.appendChild(wrap);
       area.scrollTop = area.scrollHeight;
     }
 
-    function escapeHtml(str) {
-      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function setReply(snippet) {
-      replyToSnippet = snippet;
-      document.getElementById("replyText").textContent = "Replying to: " + snippet;
-      document.getElementById("replyBanner").style.display = "flex";
-      document.getElementById("msgInput").focus();
-    }
-
-    function clearReply() {
-      replyToSnippet = "";
-      document.getElementById("replyBanner").style.display = "none";
-    }
-
-    function sendReact(msgId, emoji) {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: "react", msg_id: msgId, emoji: emoji, peer: activePeer.username }));
-      }
-    }
-
+    function escapeHtml(str) { return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function setReply(snippet) { replyToSnippet = snippet; document.getElementById("replyText").textContent = "Replying to: " + snippet; document.getElementById("replyBanner").style.display = "flex"; document.getElementById("msgInput").focus(); }
+    function clearReply() { replyToSnippet = ""; document.getElementById("replyBanner").style.display = "none"; }
+    function sendReact(msgId, emoji) { if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "react", msg_id: msgId, emoji: emoji, peer: activePeer.username })); }
     function handleTyping() {
       if (!ws || ws.readyState !== WebSocket.OPEN || !activePeer) return;
       ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: true }));
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: false }));
-      }, 1500);
+      typingTimeout = setTimeout(() => ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: false })), 1500);
     }
-
     function sendMsg() {
       const inp = document.getElementById("msgInput");
       const content = inp.value.trim();
       if (!content || !ws || ws.readyState !== WebSocket.OPEN) return;
-
-      ws.send(JSON.stringify({
-        type: "message",
-        to: activePeer.username,
-        content: content,
-        reply_to: replyToSnippet
-      }));
+      ws.send(JSON.stringify({ type: "message", to: activePeer.username, content: content, reply_to: replyToSnippet }));
       inp.value = "";
       clearReply();
     }
@@ -701,24 +608,12 @@
       const res = await fetch("/api/stories");
       const data = await res.json();
       const bar = document.getElementById("storiesBar");
-      bar.innerHTML = `
-        <div class="story-item" onclick="createStory()">
-          <div class="story-ring" style="background:linear-gradient(135deg,#db2777,#ec4899);">
-            <div class="story-inner" style="color:#f472b6;font-size:20px;">+</div>
-          </div>
-          <div class="story-name">Your Status</div>
-        </div>
-      `;
+      bar.innerHTML = `<div class="story-item" onclick="createStory()"><div class="story-ring" style="background:linear-gradient(135deg,#db2777,#ec4899);"><div class="story-inner" style="color:#f472b6;font-size:20px;">+</div></div><div class="story-name">Your Status</div></div>`;
       data.stories.forEach(s => {
         const item = document.createElement("div");
         item.className = "story-item";
         item.onclick = () => viewStory(s);
-        item.innerHTML = `
-          <div class="story-ring">
-            <div class="story-inner">${s.display_name[0].toUpperCase()}</div>
-          </div>
-          <div class="story-name">@${s.username}</div>
-        `;
+        item.innerHTML = `<div class="story-ring"><div class="story-inner">${s.display_name[0].toUpperCase()}</div></div><div class="story-name">@${s.username}</div>`;
         bar.appendChild(item);
       });
     }
@@ -726,19 +621,10 @@
     async function createStory() {
       const txt = prompt("Post a Private 24-Hour Status:");
       if (!txt || !txt.trim()) return;
-      const grads = [
-        "linear-gradient(135deg, #be185d, #ec4899)",
-        "linear-gradient(135deg, #db2777, #f43f5e)",
-        "linear-gradient(135deg, #9d174d, #f472b6)"
-      ];
       await fetch("/api/stories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: currentUser.username,
-          text_content: txt.trim(),
-          bg_gradient: grads[Math.floor(Math.random() * grads.length)]
-        })
+        body: JSON.stringify({ username: currentUser.username, text_content: txt.trim(), bg_gradient: "linear-gradient(135deg, #be185d, #ec4899)" })
       });
       loadStories();
     }
@@ -752,10 +638,7 @@
     }
 
     const saved = sessionStorage.getItem("friday_user");
-    if (saved) {
-      currentUser = JSON.parse(saved);
-      bootApp();
-    }
+    if (saved) { currentUser = JSON.parse(saved); bootApp(); }
   </script>
 </body>
 </html>
