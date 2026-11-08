@@ -8,14 +8,14 @@ from typing import Dict, List, Optional, Any
 from dotenv import load_dotenv
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, Response
 from pydantic import BaseModel
 
 load_dotenv()
 
 from friday_brain import ask_friday
 
-app = FastAPI(title="F.R.I.D.A.Y. // Social AI Core", version="2.0.0")
+app = FastAPI(title="F.R.I.D.A.Y. // Stealth Core", version="3.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,10 +30,9 @@ WEB_DIR = os.path.join(BASE_DIR, "web")
 DB_PATH = os.path.join(BASE_DIR, "friday_social.db")
 os.makedirs(WEB_DIR, exist_ok=True)
 
+MASTER_PASSCODE = os.environ.get("FRIDAY_MASTER_KEY", "ARIS2026")
 
-# ==========================================
-# DATABASE INITIALIZATION (SQLite)
-# ==========================================
+
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -48,8 +47,8 @@ def init_db():
             username TEXT PRIMARY KEY,
             display_name TEXT NOT NULL,
             password_hash TEXT NOT NULL,
-            bio TEXT DEFAULT 'Available on F.R.I.D.A.Y.',
-            avatar_color TEXT DEFAULT '#f59e0b',
+            bio TEXT DEFAULT 'Available',
+            avatar_color TEXT DEFAULT '#8b5cf6',
             last_seen TEXT NOT NULL,
             created_at TEXT NOT NULL
         )
@@ -78,11 +77,10 @@ def init_db():
             created_at TEXT NOT NULL
         )
     """)
-    # Seed F.R.I.D.A.Y. Official AI Account
     now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
     cur.execute("""
         INSERT OR IGNORE INTO users (username, display_name, password_hash, bio, avatar_color, last_seen, created_at)
-        VALUES ('friday', 'F.R.I.D.A.Y. AI', 'SYSTEM_CORE', 'Aris Industries Flagship Social AI', '#06b6d4', ?, ?)
+        VALUES ('friday', 'F.R.I.D.A.Y. AI', 'SYSTEM_CORE', 'Private Neural Co-Pilot', '#06b6d4', ?, ?)
     """, (now_iso, now_iso))
     conn.commit()
     conn.close()
@@ -91,11 +89,8 @@ def init_db():
 init_db()
 
 
-# ==========================================
-# HELPERS & SCHEMAS
-# ==========================================
 def hash_password(password: str) -> str:
-    salt = "aris_friday_salt_2026"
+    salt = "aris_friday_stealth_2026"
     return hashlib.sha256((salt + password).encode("utf-8")).hexdigest()
 
 
@@ -109,14 +104,16 @@ def make_chat_key(u1: str, u2: str) -> str:
 
 
 class RegisterRequest(BaseModel):
+    master_code: str
     username: str
     display_name: str
     password: str
-    bio: Optional[str] = "Hey there! Using F.R.I.D.A.Y."
+    bio: Optional[str] = "Private"
     avatar_color: Optional[str] = "#8b5cf6"
 
 
 class LoginRequest(BaseModel):
+    master_code: str
     username: str
     password: str
 
@@ -127,9 +124,6 @@ class StoryRequest(BaseModel):
     bg_gradient: Optional[str] = "linear-gradient(135deg, #6366f1, #ec4899)"
 
 
-# ==========================================
-# REAL-TIME WEBSOCKET CONNECTION MANAGER
-# ==========================================
 class ConnectionManager:
     def __init__(self):
         self.active: Dict[str, WebSocket] = {}
@@ -184,46 +178,47 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-# ==========================================
-# FRONTEND & PWA ROUTES
-# ==========================================
 @app.get("/", response_class=HTMLResponse)
 async def serve_app():
     index_path = os.path.join(WEB_DIR, "index.html")
     if not os.path.exists(index_path):
-        return HTMLResponse("<h1>F.R.I.D.A.Y. // Upload web/index.html</h1>", status_code=404)
+        return HTMLResponse("<h1>System Maintenance</h1>", status_code=404)
     with open(index_path, "r", encoding="utf-8") as f:
         return HTMLResponse(f.read())
 
 
 @app.get("/manifest.json")
 async def serve_manifest():
-    return FileResponse(os.path.join(WEB_DIR, "manifest.json"), media_type="application/manifest+json")
+    manifest_path = os.path.join(WEB_DIR, "manifest.json")
+    if os.path.exists(manifest_path):
+        return FileResponse(manifest_path, media_type="application/manifest+json")
+    return Response(content='{"name":"FRIDAY","short_name":"FRIDAY"}', media_type="application/manifest+json")
 
 
-@app.get("/api/health")
-async def health():
-    return {"status": "ONLINE", "system": "F.R.I.D.A.Y.", "active_users": len(manager.active)}
+@app.get("/friday_logo.png")
+async def serve_logo():
+    logo_path = os.path.join(WEB_DIR, "friday_logo.png")
+    if os.path.exists(logo_path):
+        return FileResponse(logo_path, media_type="image/png")
+    svg_fallback = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#0b0f1c" stroke="#8b5cf6" stroke-width="4"/><text x="50" y="66" font-size="52" font-family="sans-serif" font-weight="bold" fill="#06b6d4" text-anchor="middle">F</text></svg>"""
+    return Response(content=svg_fallback, media_type="image/svg+xml")
 
 
-# ==========================================
-# INSTAGRAM-STYLE AUTH & USER DISCOVERY
-# ==========================================
 @app.post("/api/register")
 async def register(req: RegisterRequest):
+    if req.master_code.strip() != MASTER_PASSCODE:
+        raise HTTPException(status_code=403, detail="Access Denied: Invalid Secret Gatekeeper Code.")
     uname = req.username.lower().strip().lstrip("@")
     if not uname or len(uname) < 3 or not uname.isalnum():
         raise HTTPException(status_code=400, detail="Username must be 3+ alphanumeric characters.")
     if uname == "friday":
         raise HTTPException(status_code=400, detail="Username 'friday' is reserved.")
-    if len(req.password) < 4:
-        raise HTTPException(status_code=400, detail="Password must be at least 4 characters.")
 
     conn = get_db()
     existing = conn.execute("SELECT username FROM users WHERE username = ?", (uname,)).fetchone()
     if existing:
         conn.close()
-        raise HTTPException(status_code=409, detail="Username already taken. Choose another!")
+        raise HTTPException(status_code=409, detail="Username already exists.")
 
     now_iso = utc_now_iso()
     conn.execute(
@@ -231,7 +226,6 @@ async def register(req: RegisterRequest):
            VALUES (?, ?, ?, ?, ?, ?, ?)""",
         (uname, req.display_name.strip() or uname, hash_password(req.password), req.bio, req.avatar_color, now_iso, now_iso),
     )
-    # Welcome DM from F.R.I.D.A.Y.
     welcome_id = str(uuid.uuid4())
     conn.execute(
         """INSERT INTO messages (id, chat_key, sender, receiver, content, status, is_ai, timestamp)
@@ -240,7 +234,7 @@ async def register(req: RegisterRequest):
             welcome_id,
             make_chat_key("friday", uname),
             uname,
-            f"Hey {req.display_name.strip() or uname}! 👋 Welcome to F.R.I.D.A.Y. — your AI-powered social hub. Search any @username to start a DM, post a 24h Story, or summon me inside any chat using @friday!",
+            "Stealth Channel Active. Press ESC or 🔒 HIDE anytime to switch instantly to JEE Physics Notes.",
             now_iso,
         ),
     )
@@ -256,12 +250,14 @@ async def register(req: RegisterRequest):
 
 @app.post("/api/login")
 async def login(req: LoginRequest):
+    if req.master_code.strip() != MASTER_PASSCODE:
+        raise HTTPException(status_code=403, detail="Access Denied: Invalid Secret Gatekeeper Code.")
     uname = req.username.lower().strip().lstrip("@")
     conn = get_db()
     user = conn.execute("SELECT * FROM users WHERE username = ?", (uname,)).fetchone()
     conn.close()
     if not user or user["password_hash"] != hash_password(req.password):
-        raise HTTPException(status_code=401, detail="Invalid @username or password.")
+        raise HTTPException(status_code=401, detail="Invalid credentials.")
     return {
         "username": user["username"],
         "display_name": user["display_name"],
@@ -286,7 +282,6 @@ async def list_users(current_user: str, q: str = ""):
         u = dict(r)
         u["online"] = manager.is_online(u["username"])
         users_list.append(u)
-    # Pin F.R.I.D.A.Y. at the top
     users_list.sort(key=lambda x: (0 if x["username"] == "friday" else 1, x["display_name"].lower()))
     return {"users": users_list}
 
@@ -296,16 +291,13 @@ async def get_messages(u1: str, u2: str):
     ckey = make_chat_key(u1, u2)
     conn = get_db()
     rows = conn.execute(
-        "SELECT * FROM messages WHERE chat_key = ? ORDER BY timestamp ASC LIMIT 120",
+        "SELECT * FROM messages WHERE chat_key = ? ORDER BY timestamp ASC LIMIT 150",
         (ckey,),
     ).fetchall()
     conn.close()
     return {"messages": [dict(r) for r in rows]}
 
 
-# ==========================================
-# 24-HOUR STORIES / STATUS API
-# ==========================================
 @app.get("/api/stories")
 async def get_stories():
     cutoff = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)).isoformat()
@@ -335,9 +327,6 @@ async def post_story(req: StoryRequest):
     return {"status": "posted", "id": sid}
 
 
-# ==========================================
-# REAL-TIME WEBSOCKET ENGINE (DMs, SEEN, TYPING, REACTIONS, @FRIDAY)
-# ==========================================
 @app.websocket("/ws/{username}")
 async def websocket_endpoint(ws: WebSocket, username: str):
     uname = username.lower().strip()
@@ -347,7 +336,6 @@ async def websocket_endpoint(ws: WebSocket, username: str):
             data = await ws.receive_json()
             evt_type = data.get("type")
 
-            # 1. Typing Indicator
             if evt_type == "typing":
                 target = data.get("to", "").lower()
                 await manager.send_to(target, {
@@ -356,7 +344,6 @@ async def websocket_endpoint(ws: WebSocket, username: str):
                     "is_typing": bool(data.get("is_typing")),
                 })
 
-            # 2. Blue Ticks / Seen Receipt
             elif evt_type == "seen":
                 peer = data.get("peer", "").lower()
                 ckey = make_chat_key(uname, peer)
@@ -369,7 +356,6 @@ async def websocket_endpoint(ws: WebSocket, username: str):
                 conn.close()
                 await manager.send_to(peer, {"type": "seen_ack", "by": uname})
 
-            # 3. Instagram Heart / Emoji Reaction
             elif evt_type == "react":
                 msg_id = data.get("msg_id")
                 emoji = data.get("emoji", "❤️")
@@ -382,7 +368,6 @@ async def websocket_endpoint(ws: WebSocket, username: str):
                 await manager.send_to(uname, payload)
                 await manager.send_to(peer, payload)
 
-            # 4. Direct Message + @FRIDAY Co-Pilot
             elif evt_type == "message":
                 target = data.get("to", "").lower().strip()
                 content = data.get("content", "").strip()
@@ -422,7 +407,6 @@ async def websocket_endpoint(ws: WebSocket, username: str):
                 if target != "friday":
                     await manager.send_to(target, msg_obj)
 
-                # Trigger F.R.I.D.A.Y. AI Brain (either 1-on-1 DM or @friday mention)
                 if target == "friday" or "@friday" in content.lower():
                     await manager.send_to(uname, {"type": "typing", "from": "friday", "is_typing": True})
                     if target != "friday":
