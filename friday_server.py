@@ -1,21 +1,18 @@
 import os
 import json
-import uuid
 import sqlite3
-import hashlib
-import datetime
-from typing import Dict, List, Optional, Any
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
 from dotenv import load_dotenv
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, FileResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from pydantic import BaseModel
+from groq import Groq
 
 load_dotenv()
 
-from friday_brain import ask_friday
-
-app = FastAPI(title="F.R.I.D.A.Y. // Stealth Core", version="3.1.0")
+app = FastAPI(title="F.R.I.D.A.Y. // Private Vault", version="3.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,36 +24,36 @@ app.add_middleware(
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(BASE_DIR, "web")
-DB_PATH = os.path.join(BASE_DIR, "friday_social.db")
+DB_PATH = os.path.join(BASE_DIR, "friday_vault.db")
 os.makedirs(WEB_DIR, exist_ok=True)
 
-MASTER_PASSCODE = os.environ.get("FRIDAY_MASTER_KEY", "ARIS2026")
+MASTER_CODE = os.environ.get("MASTER_PASSCODE", "MAYANK77")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
+
+AI_MODELS = ["openai/gpt-oss-120b", "qwen/qwen3.8-27b", "openai/gpt-oss-20b"]
 
 
-def get_db():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 def init_db():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""
         CREATE TABLE IF NOT EXISTS users (
             username TEXT PRIMARY KEY,
             display_name TEXT NOT NULL,
-            password_hash TEXT NOT NULL,
-            bio TEXT DEFAULT 'Available',
-            avatar_color TEXT DEFAULT '#8b5cf6',
-            last_seen TEXT NOT NULL,
-            created_at TEXT NOT NULL
+            password TEXT NOT NULL,
+            bio TEXT DEFAULT '',
+            avatar_color TEXT DEFAULT '#ec4899',
+            last_seen TEXT
         )
     """)
-    cur.execute("""
+    c.execute("""
         CREATE TABLE IF NOT EXISTS messages (
-            id TEXT PRIMARY KEY,
-            chat_key TEXT NOT NULL,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             sender TEXT NOT NULL,
             receiver TEXT NOT NULL,
             content TEXT NOT NULL,
@@ -67,21 +64,28 @@ def init_db():
             timestamp TEXT NOT NULL
         )
     """)
-    cur.execute("""
+    c.execute("""
         CREATE TABLE IF NOT EXISTS stories (
-            id TEXT PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
-            display_name TEXT NOT NULL,
             text_content TEXT NOT NULL,
             bg_gradient TEXT NOT NULL,
             created_at TEXT NOT NULL
         )
     """)
-    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    cur.execute("""
-        INSERT OR IGNORE INTO users (username, display_name, password_hash, bio, avatar_color, last_seen, created_at)
-        VALUES ('friday', 'F.R.I.D.A.Y. AI', 'SYSTEM_CORE', 'Private Neural Co-Pilot', '#06b6d4', ?, ?)
-    """, (now_iso, now_iso))
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS follows (
+            follower TEXT NOT NULL,
+            following TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending',
+            created_at TEXT NOT NULL,
+            PRIMARY KEY (follower, following)
+        )
+    """)
+    c.execute(
+        "INSERT OR IGNORE INTO users (username, display_name, password, bio, avatar_color, last_seen) VALUES (?, ?, ?, ?, ?, ?)",
+        ("friday", "F.R.I.D.A.Y. AI", "SYSTEM_BOT", "Private Neural Co-Pilot", "#db2777", now_iso())
+    )
     conn.commit()
     conn.close()
 
@@ -89,88 +93,65 @@ def init_db():
 init_db()
 
 
-def hash_password(password: str) -> str:
-    salt = "aris_friday_stealth_2026"
-    return hashlib.sha256((salt + password).encode("utf-8")).hexdigest()
-
-
-def utc_now_iso() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()
-
-
-def make_chat_key(u1: str, u2: str) -> str:
-    pair = sorted([u1.lower().strip(), u2.lower().strip()])
-    return f"{pair[0]}__{pair[1]}"
-
-
-class RegisterRequest(BaseModel):
-    master_code: str
-    username: str
-    display_name: str
-    password: str
-    bio: Optional[str] = "Private"
-    avatar_color: Optional[str] = "#8b5cf6"
-
-
-class LoginRequest(BaseModel):
+class AuthPayload(BaseModel):
     master_code: str
     username: str
     password: str
+    display_name: Optional[str] = ""
+    bio: Optional[str] = ""
+    avatar_color: Optional[str] = "#ec4899"
 
 
-class StoryRequest(BaseModel):
+class StoryPayload(BaseModel):
     username: str
     text_content: str
-    bg_gradient: Optional[str] = "linear-gradient(135deg, #6366f1, #ec4899)"
+    bg_gradient: str = "linear-gradient(135deg, #be185d, #ec4899)"
+
+
+class FollowAction(BaseModel):
+    follower: str
+    following: str
 
 
 class ConnectionManager:
     def __init__(self):
-        self.active: Dict[str, WebSocket] = {}
+        self.active: Dict[str, List[WebSocket]] = {}
 
     async def connect(self, username: str, ws: WebSocket):
         await ws.accept()
-        self.active[username] = ws
+        self.active.setdefault(username, []).append(ws)
         self.update_last_seen(username)
         await self.broadcast_presence(username, True)
 
-    def disconnect(self, username: str):
-        if username in self.active:
-            del self.active[username]
+    def disconnect(self, username: str, ws: WebSocket):
+        if username in self.active and ws in self.active[username]:
+            self.active[username].remove(ws)
+            if not self.active[username]:
+                del self.active[username]
         self.update_last_seen(username)
 
+    def is_online(self, username: str) -> bool:
+        return username == "friday" or (username in self.active and len(self.active[username]) > 0)
+
     def update_last_seen(self, username: str):
-        conn = get_db()
-        conn.execute("UPDATE users SET last_seen = ? WHERE username = ?", (utc_now_iso(), username))
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("UPDATE users SET last_seen = ? WHERE username = ?", (now_iso(), username))
         conn.commit()
         conn.close()
 
-    def is_online(self, username: str) -> bool:
-        return username == "friday" or username in self.active
-
     async def send_to(self, username: str, payload: dict):
-        ws = self.active.get(username)
-        if ws:
+        for ws in list(self.active.get(username, [])):
             try:
                 await ws.send_json(payload)
             except Exception:
                 pass
 
     async def broadcast_presence(self, username: str, online: bool):
-        conn = get_db()
-        row = conn.execute("SELECT last_seen FROM users WHERE username = ?", (username,)).fetchone()
-        conn.close()
-        last_seen = row["last_seen"] if row else utc_now_iso()
-        event = {
-            "type": "presence",
-            "username": username,
-            "online": online,
-            "last_seen": last_seen,
-        }
-        for user, ws in list(self.active.items()):
-            if user != username:
+        msg = {"type": "presence", "username": username, "online": online, "last_seen": now_iso()}
+        for user_sockets in list(self.active.values()):
+            for ws in list(user_sockets):
                 try:
-                    await ws.send_json(event)
+                    await ws.send_json(msg)
                 except Exception:
                     pass
 
@@ -178,298 +159,359 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+def can_chat(u1: str, u2: str) -> bool:
+    if u1 == "friday" or u2 == "friday" or u1 == u2:
+        return True
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute(
+        "SELECT 1 FROM follows WHERE ((follower=? AND following=?) OR (follower=? AND following=?)) AND status='accepted'",
+        (u1, u2, u2, u1)
+    )
+    ok = c.fetchone() is not None
+    conn.close()
+    return ok
+
+
+def get_follow_state(me: str, peer: str) -> str:
+    if peer == "friday" or me == peer:
+        return "accepted"
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    # Check if already accepted in either direction
+    c.execute(
+        "SELECT 1 FROM follows WHERE ((follower=? AND following=?) OR (follower=? AND following=?)) AND status='accepted'",
+        (me, peer, peer, me)
+    )
+    if c.fetchone():
+        conn.close()
+        return "accepted"
+    # Check outgoing pending
+    c.execute("SELECT status FROM follows WHERE follower=? AND following=?", (me, peer))
+    row = c.fetchone()
+    if row and row[0] == "pending":
+        conn.close()
+        return "outgoing_pending"
+    # Check incoming pending
+    c.execute("SELECT status FROM follows WHERE follower=? AND following=?", (peer, me))
+    row2 = c.fetchone()
+    if row2 and row2[0] == "pending":
+        conn.close()
+        return "incoming_pending"
+    conn.close()
+    return "none"
+
+
+async def ask_friday_ai(prompt: str) -> str:
+    if not client:
+        return "F.R.I.D.A.Y. core offline: GROQ_API_KEY missing."
+    for model in AI_MODELS:
+        try:
+            res = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": "You are F.R.I.D.A.Y., an intelligent, loyal, concise personal AI assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.65,
+                max_tokens=900,
+            )
+            return res.choices[0].message.content.strip()
+        except Exception:
+            continue
+    return "Neural link busy, try again in a moment."
+
+
 @app.get("/", response_class=HTMLResponse)
-async def serve_app():
-    index_path = os.path.join(WEB_DIR, "index.html")
-    if not os.path.exists(index_path):
-        return HTMLResponse("<h1>System Maintenance</h1>", status_code=404)
-    with open(index_path, "r", encoding="utf-8") as f:
+async def serve_index():
+    path = os.path.join(WEB_DIR, "index.html")
+    if not os.path.exists(path):
+        return HTMLResponse("<h3>F.R.I.D.A.Y. UI Missing</h3>")
+    with open(path, "r", encoding="utf-8") as f:
         return HTMLResponse(f.read())
-
-
-@app.get("/manifest.json")
-async def serve_manifest():
-    manifest_path = os.path.join(WEB_DIR, "manifest.json")
-    if os.path.exists(manifest_path):
-        return FileResponse(manifest_path, media_type="application/manifest+json")
-    return Response(content='{"name":"FRIDAY","short_name":"FRIDAY"}', media_type="application/manifest+json")
 
 
 @app.get("/friday_logo.png")
 async def serve_logo():
-    logo_path = os.path.join(WEB_DIR, "friday_logo.png")
-    if os.path.exists(logo_path):
-        return FileResponse(logo_path, media_type="image/png")
-    svg_fallback = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#0b0f1c" stroke="#8b5cf6" stroke-width="4"/><text x="50" y="66" font-size="52" font-family="sans-serif" font-weight="bold" fill="#06b6d4" text-anchor="middle">F</text></svg>"""
-    return Response(content=svg_fallback, media_type="image/svg+xml")
+    p = os.path.join(WEB_DIR, "friday_logo.png")
+    if os.path.exists(p):
+        return FileResponse(p)
+    raise HTTPException(status_code=404)
+
+
+@app.get("/manifest.json")
+async def serve_manifest():
+    return JSONResponse({
+        "name": "JEE Physics Study Portal",
+        "short_name": "PhysicsNotes",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#030305",
+        "theme_color": "#ec4899"
+    })
 
 
 @app.post("/api/register")
-async def register(req: RegisterRequest):
-    if req.master_code.strip() != MASTER_PASSCODE:
-        raise HTTPException(status_code=403, detail="Access Denied: Invalid Secret Gatekeeper Code.")
-    uname = req.username.lower().strip().lstrip("@")
-    if not uname or len(uname) < 3 or not uname.isalnum():
-        raise HTTPException(status_code=400, detail="Username must be 3+ alphanumeric characters.")
-    if uname == "friday":
-        raise HTTPException(status_code=400, detail="Username 'friday' is reserved.")
-
-    conn = get_db()
-    existing = conn.execute("SELECT username FROM users WHERE username = ?", (uname,)).fetchone()
-    if existing:
+async def register(payload: AuthPayload):
+    if payload.master_code != MASTER_CODE:
+        raise HTTPException(status_code=403, detail="Invalid Secret Gatekeeper Code")
+    uname = payload.username.strip().lower().lstrip("@")
+    if not uname or len(uname) < 2:
+        raise HTTPException(status_code=400, detail="Username too short")
+    dname = payload.display_name.strip() or uname.capitalize()
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        conn.execute(
+            "INSERT INTO users (username, display_name, password, bio, avatar_color, last_seen) VALUES (?, ?, ?, ?, ?, ?)",
+            (uname, dname, payload.password, payload.bio or "", payload.avatar_color or "#ec4899", now_iso())
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
         conn.close()
-        raise HTTPException(status_code=409, detail="Username already exists.")
-
-    now_iso = utc_now_iso()
-    conn.execute(
-        """INSERT INTO users (username, display_name, password_hash, bio, avatar_color, last_seen, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
-        (uname, req.display_name.strip() or uname, hash_password(req.password), req.bio, req.avatar_color, now_iso, now_iso),
-    )
-    welcome_id = str(uuid.uuid4())
-    conn.execute(
-        """INSERT INTO messages (id, chat_key, sender, receiver, content, status, is_ai, timestamp)
-           VALUES (?, ?, 'friday', ?, ?, 'delivered', 1, ?)""",
-        (
-            welcome_id,
-            make_chat_key("friday", uname),
-            uname,
-            "Stealth Channel Active. Press ESC or 🔒 HIDE anytime to switch instantly to JEE Physics Notes.",
-            now_iso,
-        ),
-    )
-    conn.commit()
+        raise HTTPException(status_code=409, detail="Username already exists")
     conn.close()
-    return {
-        "username": uname,
-        "display_name": req.display_name.strip() or uname,
-        "bio": req.bio,
-        "avatar_color": req.avatar_color,
-    }
+    return {"username": uname, "display_name": dname, "bio": payload.bio or "", "avatar_color": "#ec4899"}
 
 
 @app.post("/api/login")
-async def login(req: LoginRequest):
-    if req.master_code.strip() != MASTER_PASSCODE:
-        raise HTTPException(status_code=403, detail="Access Denied: Invalid Secret Gatekeeper Code.")
-    uname = req.username.lower().strip().lstrip("@")
-    conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE username = ?", (uname,)).fetchone()
+async def login(payload: AuthPayload):
+    if payload.master_code != MASTER_CODE:
+        raise HTTPException(status_code=403, detail="Invalid Secret Gatekeeper Code")
+    uname = payload.username.strip().lower().lstrip("@")
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT username, display_name, password, bio, avatar_color FROM users WHERE username=?", (uname,))
+    row = c.fetchone()
     conn.close()
-    if not user or user["password_hash"] != hash_password(req.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials.")
-    return {
-        "username": user["username"],
-        "display_name": user["display_name"],
-        "bio": user["bio"],
-        "avatar_color": user["avatar_color"],
-    }
+    if not row or row[2] != payload.password:
+        raise HTTPException(status_code=401, detail="Wrong username or password")
+    return {"username": row[0], "display_name": row[1], "bio": row[3], "avatar_color": row[4]}
 
 
-@app.get("/api/users/{current_user}")
-async def list_users(current_user: str, q: str = ""):
-    conn = get_db()
-    query = f"%{q.lower().strip()}%"
-    rows = conn.execute(
-        """SELECT username, display_name, bio, avatar_color, last_seen FROM users
-           WHERE username != ? AND (username LIKE ? OR LOWER(display_name) LIKE ?)""",
-        (current_user.lower(), query, query),
-    ).fetchall()
+@app.get("/api/users/{me}")
+async def list_users(me: str, q: str = ""):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("SELECT username, display_name, bio, avatar_color, last_seen FROM users WHERE username != ?", (me,))
+    rows = c.fetchall()
     conn.close()
-
-    users_list = []
+    ql = q.strip().lower().lstrip("@")
+    out = []
     for r in rows:
-        u = dict(r)
-        u["online"] = manager.is_online(u["username"])
-        users_list.append(u)
-    users_list.sort(key=lambda x: (0 if x["username"] == "friday" else 1, x["display_name"].lower()))
-    return {"users": users_list}
+        if ql and ql not in r[0] and ql not in r[1].lower():
+            continue
+        f_state = get_follow_state(me, r[0])
+        out.append({
+            "username": r[0],
+            "display_name": r[1],
+            "bio": r[2],
+            "avatar_color": r[3],
+            "last_seen": r[4],
+            "online": manager.is_online(r[0]),
+            "follow_state": f_state
+        })
+    return {"users": out}
 
 
-@app.get("/api/messages/{u1}/{u2}")
-async def get_messages(u1: str, u2: str):
-    ckey = make_chat_key(u1, u2)
-    conn = get_db()
-    rows = conn.execute(
-        "SELECT * FROM messages WHERE chat_key = ? ORDER BY timestamp ASC LIMIT 150",
-        (ckey,),
-    ).fetchall()
+@app.post("/api/follow/request")
+async def send_follow_request(act: FollowAction):
+    if act.follower == act.following or act.following == "friday":
+        return {"status": "accepted"}
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute(
+        "INSERT OR REPLACE INTO follows (follower, following, status, created_at) VALUES (?, ?, 'pending', ?)",
+        (act.follower, act.following, now_iso())
+    )
+    conn.commit()
     conn.close()
-    return {"messages": [dict(r) for r in rows]}
+    await manager.send_to(act.following, {"type": "follow_update", "from": act.follower, "status": "incoming_pending"})
+    return {"status": "outgoing_pending"}
+
+
+@app.post("/api/follow/accept")
+async def accept_follow_request(act: FollowAction):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        "UPDATE follows SET status='accepted' WHERE follower=? AND following=?",
+        (act.follower, act.following)
+    )
+    conn.commit()
+    conn.close()
+    await manager.send_to(act.follower, {"type": "follow_update", "from": act.following, "status": "accepted"})
+    await manager.send_to(act.following, {"type": "follow_update", "from": act.follower, "status": "accepted"})
+    return {"status": "accepted"}
+
+
+@app.post("/api/follow/reject")
+async def reject_follow_request(act: FollowAction):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        "DELETE FROM follows WHERE (follower=? AND following=?) OR (follower=? AND following=?)",
+        (act.follower, act.following, act.following, act.follower)
+    )
+    conn.commit()
+    conn.close()
+    await manager.send_to(act.follower, {"type": "follow_update", "from": act.following, "status": "none"})
+    await manager.send_to(act.following, {"type": "follow_update", "from": act.follower, "status": "none"})
+    return {"status": "none"}
+
+
+@app.get("/api/messages/{me}/{peer}")
+async def get_messages(me: str, peer: str):
+    f_state = get_follow_state(me, peer)
+    if f_state != "accepted":
+        return {"messages": [], "follow_state": f_state}
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""
+        SELECT id, sender, receiver, content, reply_to, reaction, status, is_ai, timestamp
+        FROM messages
+        WHERE (sender=? AND receiver=?) OR (sender=? AND receiver=?)
+        ORDER BY id ASC LIMIT 200
+    """, (me, peer, peer, me))
+    rows = c.fetchall()
+    conn.close()
+    msgs = [
+        {
+            "id": r[0], "sender": r[1], "receiver": r[2], "content": r[3],
+            "reply_to": r[4], "reaction": r[5], "status": r[6], "is_ai": r[7], "timestamp": r[8]
+        }
+        for r in rows
+    ]
+    return {"messages": msgs, "follow_state": "accepted"}
 
 
 @app.get("/api/stories")
 async def get_stories():
-    cutoff = (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)).isoformat()
-    conn = get_db()
-    conn.execute("DELETE FROM stories WHERE created_at < ?", (cutoff,))
-    conn.commit()
-    rows = conn.execute("SELECT * FROM stories ORDER BY created_at DESC").fetchall()
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""
+        SELECT s.id, s.username, u.display_name, s.text_content, s.bg_gradient, s.created_at
+        FROM stories s JOIN users u ON s.username = u.username
+        ORDER BY s.id DESC LIMIT 30
+    """)
+    rows = c.fetchall()
     conn.close()
-    return {"stories": [dict(r) for r in rows]}
+    return {
+        "stories": [
+            {"id": r[0], "username": r[1], "display_name": r[2], "text_content": r[3], "bg_gradient": r[4], "created_at": r[5]}
+            for r in rows
+        ]
+    }
 
 
 @app.post("/api/stories")
-async def post_story(req: StoryRequest):
-    conn = get_db()
-    user = conn.execute("SELECT display_name FROM users WHERE username = ?", (req.username.lower(),)).fetchone()
-    if not user:
-        conn.close()
-        raise HTTPException(status_code=404, detail="User not found.")
-    sid = str(uuid.uuid4())
-    now_iso = utc_now_iso()
+async def post_story(payload: StoryPayload):
+    conn = sqlite3.connect(DB_PATH)
     conn.execute(
-        "INSERT INTO stories (id, username, display_name, text_content, bg_gradient, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-        (sid, req.username.lower(), user["display_name"], req.text_content[:220], req.bg_gradient, now_iso),
+        "INSERT INTO stories (username, text_content, bg_gradient, created_at) VALUES (?, ?, ?, ?)",
+        (payload.username, payload.text_content, payload.bg_gradient, now_iso())
     )
     conn.commit()
     conn.close()
-    return {"status": "posted", "id": sid}
+    return {"status": "ok"}
 
 
 @app.websocket("/ws/{username}")
 async def websocket_endpoint(ws: WebSocket, username: str):
-    uname = username.lower().strip()
-    await manager.connect(uname, ws)
+    await manager.connect(username, ws)
     try:
         while True:
             data = await ws.receive_json()
-            evt_type = data.get("type")
+            mtype = data.get("type")
 
-            if evt_type == "typing":
-                target = data.get("to", "").lower()
-                await manager.send_to(target, {
-                    "type": "typing",
-                    "from": uname,
-                    "is_typing": bool(data.get("is_typing")),
-                })
+            if mtype == "ping":
+                await ws.send_json({"type": "pong"})
+                continue
 
-            elif evt_type == "seen":
-                peer = data.get("peer", "").lower()
-                ckey = make_chat_key(uname, peer)
-                conn = get_db()
-                conn.execute(
-                    "UPDATE messages SET status = 'seen' WHERE chat_key = ? AND receiver = ? AND status != 'seen'",
-                    (ckey, uname),
-                )
-                conn.commit()
-                conn.close()
-                await manager.send_to(peer, {"type": "seen_ack", "by": uname})
+            if mtype == "typing":
+                peer = data.get("to")
+                if peer and can_chat(username, peer):
+                    await manager.send_to(peer, {"type": "typing", "from": username, "is_typing": data.get("is_typing", False)})
 
-            elif evt_type == "react":
+            elif mtype == "seen":
+                peer = data.get("peer")
+                if peer:
+                    conn = sqlite3.connect(DB_PATH)
+                    conn.execute("UPDATE messages SET status='seen' WHERE sender=? AND receiver=? AND status!='seen'", (peer, username))
+                    conn.commit()
+                    conn.close()
+                    await manager.send_to(peer, {"type": "seen_ack", "by": username})
+
+            elif mtype == "react":
                 msg_id = data.get("msg_id")
-                emoji = data.get("emoji", "❤️")
-                peer = data.get("peer", "").lower()
-                conn = get_db()
-                conn.execute("UPDATE messages SET reaction = ? WHERE id = ?", (emoji, msg_id))
+                emoji = data.get("emoji", "")
+                peer = data.get("peer")
+                conn = sqlite3.connect(DB_PATH)
+                conn.execute("UPDATE messages SET reaction=? WHERE id=?", (emoji, msg_id))
                 conn.commit()
                 conn.close()
-                payload = {"type": "reaction", "msg_id": msg_id, "emoji": emoji, "by": uname}
-                await manager.send_to(uname, payload)
-                await manager.send_to(peer, payload)
+                payload = {"type": "reaction", "msg_id": msg_id, "emoji": emoji}
+                await manager.send_to(username, payload)
+                if peer:
+                    await manager.send_to(peer, payload)
 
-            elif evt_type == "message":
-                target = data.get("to", "").lower().strip()
-                content = data.get("content", "").strip()
-                reply_to = data.get("reply_to", "").strip()
-                if not target or not content:
+            elif mtype == "message":
+                to_user = data.get("to")
+                content = (data.get("content") or "").strip()
+                reply_to = data.get("reply_to", "")
+                if not to_user or not content:
                     continue
 
-                ckey = make_chat_key(uname, target)
-                msg_id = str(uuid.uuid4())
-                now_iso = utc_now_iso()
-                status = "delivered" if manager.is_online(target) else "sent"
-                if target == "friday":
-                    status = "seen"
+                if not can_chat(username, to_user):
+                    await manager.send_to(username, {"type": "blocked", "reason": "Follow request must be accepted first."})
+                    continue
 
-                conn = get_db()
-                conn.execute(
-                    """INSERT INTO messages (id, chat_key, sender, receiver, content, reply_to, status, is_ai, timestamp)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)""",
-                    (msg_id, ckey, uname, target, content, reply_to, status, now_iso),
+                ts = now_iso()
+                status = "delivered" if manager.is_online(to_user) else "sent"
+                conn = sqlite3.connect(DB_PATH)
+                c = conn.cursor()
+                c.execute(
+                    "INSERT INTO messages (sender, receiver, content, reply_to, status, is_ai, timestamp) VALUES (?, ?, ?, ?, ?, 0, ?)",
+                    (username, to_user, content, reply_to, status, ts)
                 )
+                mid = c.lastrowid
                 conn.commit()
-
-                msg_obj = {
-                    "type": "new_message",
-                    "id": msg_id,
-                    "chat_key": ckey,
-                    "sender": uname,
-                    "receiver": target,
-                    "content": content,
-                    "reply_to": reply_to,
-                    "reaction": "",
-                    "status": status,
-                    "is_ai": 0,
-                    "timestamp": now_iso,
-                }
-                await manager.send_to(uname, msg_obj)
-                if target != "friday":
-                    await manager.send_to(target, msg_obj)
-
-                if target == "friday" or "@friday" in content.lower():
-                    await manager.send_to(uname, {"type": "typing", "from": "friday", "is_typing": True})
-                    if target != "friday":
-                        await manager.send_to(target, {"type": "typing", "from": "friday", "is_typing": True})
-
-                    hist_rows = conn.execute(
-                        "SELECT sender, content FROM messages WHERE chat_key = ? ORDER BY timestamp DESC LIMIT 10",
-                        (ckey,),
-                    ).fetchall()
-                    history = [
-                        {"role": "assistant" if r["sender"] == "friday" else "user", "content": r["content"]}
-                        for r in reversed(hist_rows)
-                    ]
-
-                    ai_res = ask_friday(
-                        prompt=content,
-                        sender_name=uname,
-                        chat_context=history,
-                        is_group_mention=(target != "friday"),
-                    )
-
-                    ai_id = str(uuid.uuid4())
-                    ai_time = utc_now_iso()
-                    ai_sender = "friday"
-                    ai_receiver = uname if target == "friday" else target
-
-                    conn.execute(
-                        """INSERT INTO messages (id, chat_key, sender, receiver, content, reply_to, status, is_ai, timestamp)
-                           VALUES (?, ?, ?, ?, ?, ?, 'delivered', 1, ?)""",
-                        (ai_id, ckey, ai_sender, ai_receiver, ai_res["reply"], content[:80], ai_time),
-                    )
-                    conn.commit()
-
-                    ai_msg = {
-                        "type": "new_message",
-                        "id": ai_id,
-                        "chat_key": ckey,
-                        "sender": ai_sender,
-                        "receiver": ai_receiver,
-                        "content": ai_res["reply"],
-                        "reply_to": content[:80],
-                        "reaction": "",
-                        "status": "delivered",
-                        "is_ai": 1,
-                        "timestamp": ai_time,
-                    }
-                    await manager.send_to(uname, {"type": "typing", "from": "friday", "is_typing": False})
-                    await manager.send_to(uname, ai_msg)
-                    if target != "friday":
-                        await manager.send_to(target, {"type": "typing", "from": "friday", "is_typing": False})
-                        await manager.send_to(target, ai_msg)
-
                 conn.close()
 
+                msg_obj = {
+                    "type": "new_message", "id": mid, "sender": username, "receiver": to_user,
+                    "content": content, "reply_to": reply_to, "reaction": "", "status": status, "is_ai": 0, "timestamp": ts
+                }
+                await manager.send_to(username, msg_obj)
+                if to_user != username:
+                    await manager.send_to(to_user, msg_obj)
+
+                if to_user == "friday" or "@friday" in content.lower():
+                    prompt_txt = content.replace("@friday", "").replace("@FRIDAY", "").strip() or content
+                    await manager.send_to(username, {"type": "typing", "from": "friday", "is_typing": True})
+                    ai_reply = await ask_friday_ai(prompt_txt)
+                    await manager.send_to(username, {"type": "typing", "from": "friday", "is_typing": False})
+
+                    ats = now_iso()
+                    target_peer = username if to_user == "friday" else to_user
+                    conn = sqlite3.connect(DB_PATH)
+                    c = conn.cursor()
+                    c.execute(
+                        "INSERT INTO messages (sender, receiver, content, reply_to, status, is_ai, timestamp) VALUES ('friday', ?, ?, '', 'seen', 1, ?)",
+                        (target_peer, ai_reply, ats)
+                    )
+                    aid = c.lastrowid
+                    conn.commit()
+                    conn.close()
+
+                    ai_msg = {
+                        "type": "new_message", "id": aid, "sender": "friday", "receiver": target_peer,
+                        "content": ai_reply, "reply_to": "", "reaction": "", "status": "seen", "is_ai": 1, "timestamp": ats
+                    }
+                    await manager.send_to(username, ai_msg)
+                    if to_user != "friday":
+                        await manager.send_to(to_user, ai_msg)
+
     except WebSocketDisconnect:
-        manager.disconnect(uname)
-        await manager.broadcast_presence(uname, False)
+        manager.disconnect(username, ws)
+        await manager.broadcast_presence(username, False)
     except Exception:
-        manager.disconnect(uname)
-        await manager.broadcast_presence(uname, False)
-
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8080))
-    uvicorn.run("friday_server:app", host="0.0.0.0", port=port, reload=False)
+        manager.disconnect(username, ws)
+        await manager.broadcast_presence(username, False)
