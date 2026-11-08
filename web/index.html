@@ -6,19 +6,20 @@
   <title>JEE Class 11 Physics // Formula & Study Portal</title>
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" type="image/png" href="/friday_logo.png" />
-  <meta name="theme-color" content="#8b5cf6" />
+  <meta name="theme-color" content="#ec4899" />
   <style>
     :root {
-      --bg-void: #05070e;
-      --bg-panel: #0b0f1c;
-      --bg-card: #12182b;
-      --border: rgba(139, 92, 246, 0.25);
-      --accent: #8b5cf6;
-      --cyan: #06b6d4;
+      --bg-void: #030305;
+      --bg-panel: #09060c;
+      --bg-card: #120b18;
+      --border: rgba(236, 72, 153, 0.32);
+      --accent: #ec4899;
+      --pink-bright: #f43f5e;
+      --pink-glow: rgba(236, 72, 153, 0.25);
       --emerald: #10b981;
-      --blue-tick: #38bdf8;
-      --text-main: #f8fafc;
-      --text-dim: #94a3b8;
+      --wa-blue: #00b0ff;
+      --text-main: #fdf2f8;
+      --text-dim: #a18898;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
     body {
@@ -55,38 +56,39 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 28px;
-      box-shadow: 0 0 40px rgba(139, 92, 246, 0.18);
+      box-shadow: 0 0 45px rgba(236, 72, 153, 0.22);
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
     .auth-logo-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .auth-img { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 20px var(--accent); }
+    .auth-img { width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 0 24px var(--accent); border: 2px solid var(--accent); }
     .auth-logo {
       font-size: 26px; font-weight: 900; letter-spacing: 3px;
-      background: linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899);
+      background: linear-gradient(90deg, #ff7eb3, #ec4899, #f43f5e);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
     .auth-sub { text-align: center; font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
-    .auth-tabs { display: flex; background: var(--bg-card); border-radius: 10px; padding: 4px; }
+    .auth-tabs { display: flex; background: var(--bg-card); border-radius: 10px; padding: 4px; border: 1px solid rgba(236, 72, 153, 0.15); }
     .auth-tab {
       flex: 1; padding: 8px; text-align: center; font-size: 12px; font-weight: 800;
       border-radius: 8px; cursor: pointer; color: var(--text-dim); border: none; background: transparent;
     }
-    .auth-tab.active { background: var(--accent); color: #fff; }
+    .auth-tab.active { background: linear-gradient(90deg, #db2777, #ec4899); color: #fff; }
     .auth-input {
       width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
       background: var(--bg-card); color: var(--text-main); font-size: 14px; outline: none;
     }
-    .auth-input:focus { border-color: var(--cyan); }
+    .auth-input:focus { border-color: #ff69b4; box-shadow: 0 0 12px rgba(236, 72, 153, 0.2); }
     .btn-primary {
       width: 100%; padding: 12px; border-radius: 10px; border: none;
-      background: linear-gradient(90deg, #6366f1, #ec4899);
+      background: linear-gradient(90deg, #db2777, #ec4899, #f43f5e);
       color: #fff; font-weight: 800; font-size: 14px; cursor: pointer;
+      box-shadow: 0 4px 18px rgba(236, 72, 153, 0.35);
     }
-    .auth-error { color: #f87171; font-size: 12px; text-align: center; display: none; }
+    .auth-error { color: #fb7185; font-size: 12px; text-align: center; display: none; }
 
-    /* MAIN APP */
+    /* MAIN APP - PURE BLACK & NEON PINK */
     .app-shell { display: none; width: 100vw; height: 100vh; background: var(--bg-void); }
     .sidebar {
       width: 350px; background: var(--bg-panel); border-right: 1px solid var(--border);
@@ -94,13 +96,14 @@
     }
     .profile-bar {
       padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(236, 72, 153, 0.15);
     }
     .me-info-row { display: flex; justify-content: space-between; align-items: center; }
     .me-info { display: flex; align-items: center; gap: 10px; }
     .avatar {
       width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
       justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0; position: relative;
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.3);
     }
     .online-dot {
       position: absolute; bottom: 0; right: 0; width: 11px; height: 11px;
@@ -112,56 +115,56 @@
       flex: 1; font-size: 11px; padding: 7px 8px; border-radius: 8px; text-decoration: none;
       font-weight: 800; text-align: center; border: 1px solid var(--border); cursor: pointer;
     }
-    .btn-download { background: var(--cyan); color: #000; border-color: var(--cyan); display: none; }
-    .btn-panic { background: rgba(239, 68, 68, 0.16); color: #f87171; border-color: #ef4444; }
-    .btn-link { background: rgba(139, 92, 246, 0.08); color: var(--cyan); }
+    .btn-download { background: var(--accent); color: #fff; border-color: var(--accent); display: none; }
+    .btn-panic { background: rgba(244, 63, 94, 0.18); color: #fda4af; border-color: #f43f5e; }
+    .btn-link { background: rgba(236, 72, 153, 0.1); color: #f472b6; }
     .btn-exit { background: transparent; color: var(--text-dim); }
 
     .stories-bar {
       display: flex; gap: 12px; padding: 12px 16px; overflow-x: auto;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(236, 72, 153, 0.15);
     }
     .stories-bar::-webkit-scrollbar { display: none; }
     .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
     .story-ring {
       width: 50px; height: 50px; border-radius: 50%; padding: 2px;
-      background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
+      background: linear-gradient(45deg, #ff7eb3, #ec4899, #f43f5e);
       display: flex; align-items: center; justify-content: center;
     }
     .story-inner {
       width: 100%; height: 100%; border-radius: 50%; background: var(--bg-card);
-      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fbcfe8;
     }
     .story-name { font-size: 11px; color: var(--text-dim); max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .search-box { padding: 10px 14px; }
     .search-input {
-      width: 100%; padding: 9px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);
+      width: 100%; padding: 9px 14px; border-radius: 20px; border: 1px solid rgba(236, 72, 153, 0.25);
       background: var(--bg-card); color: var(--text-main); font-size: 13px; outline: none;
     }
     .user-list { flex: 1; overflow-y: auto; }
     .user-row {
       display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer;
-      transition: 0.15s; border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: 0.15s; border-bottom: 1px solid rgba(236, 72, 153, 0.08);
     }
-    .user-row:hover, .user-row.active { background: rgba(139, 92, 246, 0.14); }
+    .user-row:hover, .user-row.active { background: rgba(236, 72, 153, 0.16); border-left: 3px solid var(--accent); }
     .user-meta { flex: 1; min-width: 0; }
     .user-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
     .ai-badge {
-      font-size: 9px; background: rgba(6, 182, 212, 0.2); color: var(--cyan);
-      border: 1px solid var(--cyan); padding: 1px 6px; border-radius: 4px;
+      font-size: 9px; background: rgba(236, 72, 153, 0.22); color: #f472b6;
+      border: 1px solid var(--accent); padding: 1px 6px; border-radius: 4px;
     }
     .user-sub { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .chat-pane { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at top, #0f162c 0%, var(--bg-void) 70%); }
+    .chat-pane { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at top, #170a1e 0%, #030305 68%); }
     .chat-header {
-      padding: 13px 20px; background: rgba(11, 15, 28, 0.92); border-bottom: 1px solid var(--border);
+      padding: 13px 20px; background: rgba(9, 6, 12, 0.94); border-bottom: 1px solid var(--border);
       display: flex; justify-content: space-between; align-items: center;
     }
     .peer-header { display: flex; align-items: center; gap: 12px; }
     .peer-status { font-size: 12px; color: var(--emerald); }
     .peer-status.offline { color: var(--text-dim); }
-    .peer-status.typing { color: var(--cyan); font-weight: 700; }
+    .peer-status.typing { color: #f472b6; font-weight: 700; }
 
     .messages-area {
       flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
@@ -171,29 +174,42 @@
     .msg-wrap.them { align-self: flex-start; align-items: flex-start; }
 
     .reply-quote {
-      font-size: 11px; color: var(--text-dim); background: rgba(255,255,255,0.06);
-      border-left: 3px solid var(--cyan); padding: 4px 10px; border-radius: 6px; margin-bottom: 3px;
+      font-size: 11px; color: #fbcfe8; background: rgba(236, 72, 153, 0.14);
+      border-left: 3px solid var(--accent); padding: 4px 10px; border-radius: 6px; margin-bottom: 3px;
     }
     .bubble {
       padding: 10px 14px; border-radius: 16px; font-size: 14.5px; line-height: 1.5;
       white-space: pre-wrap; word-wrap: break-word; cursor: pointer; position: relative;
     }
     .msg-wrap.me .bubble {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff; border-bottom-right-radius: 4px;
+      background: linear-gradient(135deg, #be185d, #ec4899);
+      color: #ffffff; border-bottom-right-radius: 4px;
+      box-shadow: 0 3px 14px rgba(236, 72, 153, 0.28);
     }
     .msg-wrap.them .bubble {
-      background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08);
-      border-bottom-left-radius: 4px;
+      background: #140d1a; border: 1px solid rgba(236, 72, 153, 0.25);
+      color: #fdf2f8; border-bottom-left-radius: 4px;
     }
     .msg-wrap.ai .bubble {
-      background: rgba(6, 182, 212, 0.12); border: 1px solid var(--cyan);
+      background: rgba(236, 72, 153, 0.12); border: 1px solid #f472b6;
     }
     .msg-footer {
-      display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-dim); margin-top: 3px;
+      display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); margin-top: 3px;
     }
-    .ticks { font-weight: 800; letter-spacing: -1px; }
-    .ticks.seen { color: var(--blue-tick); }
+
+    /* WHATSAPP-STYLE READ RECEIPTS (GREY SENT/DELIVERED -> BRIGHT BLUE SEEN) */
+    .ticks {
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: -1.5px;
+      color: #9ca3af;
+      transition: color 0.2s ease, text-shadow 0.2s ease;
+    }
+    .ticks.seen {
+      color: #00b0ff !important;
+      text-shadow: 0 0 8px rgba(0, 176, 255, 0.65);
+    }
+
     .reaction-pill {
       background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px;
       padding: 1px 6px; font-size: 12px; margin-top: -6px; z-index: 2;
@@ -216,20 +232,22 @@
       flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border);
       background: var(--bg-card); color: var(--text-main); font-size: 14.5px; outline: none;
     }
+    .msg-input:focus { border-color: #f472b6; }
     .send-btn {
       padding: 11px 22px; border-radius: 24px; border: none;
-      background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+      background: linear-gradient(90deg, #db2777, #ec4899);
       color: #fff; font-weight: 800; font-size: 13.5px; cursor: pointer;
+      box-shadow: 0 2px 14px rgba(236, 72, 153, 0.35);
     }
 
     .modal {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88);
       z-index: 999; justify-content: center; align-items: center; padding: 20px;
     }
     .story-card {
       width: 100%; max-width: 360px; height: 480px; border-radius: 20px;
       padding: 24px; display: flex; flex-direction: column; justify-content: space-between;
-      text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.8);
+      text-align: center; box-shadow: 0 0 40px rgba(236, 72, 153, 0.4);
     }
 
     @media (max-width: 768px) {
@@ -297,7 +315,7 @@
             <div class="avatar" id="meAvatar">M<div class="online-dot"></div></div>
             <div>
               <div style="font-weight:800;font-size:14px;" id="meDisplayName">User</div>
-              <div style="font-size:11px;color:var(--cyan);" id="meHandle">@handle</div>
+              <div style="font-size:11px;color:#f472b6;" id="meHandle">@handle</div>
             </div>
           </div>
           <button class="action-btn btn-panic" style="flex:0;padding:6px 10px;" onclick="activatePanicLock()" title="Press ESC anytime">🔒 HIDE (ESC)</button>
@@ -323,14 +341,14 @@
     <main class="chat-pane">
       <header class="chat-header">
         <div class="peer-header">
-          <button onclick="backToList()" style="background:none;border:none;color:var(--cyan);font-size:18px;cursor:pointer;margin-right:6px;">←</button>
-          <div class="avatar" id="peerAvatar" style="background:#06b6d4;">F</div>
+          <button onclick="backToList()" style="background:none;border:none;color:#f472b6;font-size:18px;cursor:pointer;margin-right:6px;">←</button>
+          <div class="avatar" id="peerAvatar" style="background:#ec4899;">F</div>
           <div>
             <div style="font-weight:800;font-size:15px;" id="peerName">F.R.I.D.A.Y. AI</div>
             <div class="peer-status" id="peerStatus">Online • Always Active</div>
           </div>
         </div>
-        <button onclick="activatePanicLock()" style="background:rgba(239,68,68,0.15);border:1px solid #ef4444;color:#f87171;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;">🔒 STEALTH</button>
+        <button onclick="activatePanicLock()" style="background:rgba(244,63,94,0.18);border:1px solid #f43f5e;color:#fda4af;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;">🔒 STEALTH</button>
       </header>
 
       <div class="messages-area" id="messagesArea"></div>
@@ -338,7 +356,7 @@
       <div class="composer-wrap">
         <div class="reply-banner" id="replyBanner">
           <span id="replyText">Replying to...</span>
-          <button onclick="clearReply()" style="background:none;border:none;color:#f87171;cursor:pointer;font-weight:bold;">✕</button>
+          <button onclick="clearReply()" style="background:none;border:none;color:#fb7185;cursor:pointer;font-weight:bold;">✕</button>
         </div>
         <div class="composer-row">
           <input class="msg-input" id="msgInput" placeholder="Write private message or @friday..." oninput="handleTyping()" onkeydown="if(event.key==='Enter')sendMsg()" />
@@ -363,13 +381,12 @@
   <script>
     let authMode = "login";
     let currentUser = null;
-    let activePeer = { username: "friday", display_name: "F.R.I.D.A.Y. AI", avatar_color: "#06b6d4", online: true };
+    let activePeer = { username: "friday", display_name: "F.R.I.D.A.Y. AI", avatar_color: "#ec4899", online: true };
     let ws = null;
     let typingTimeout = null;
     let replyToSnippet = "";
     let deferredPrompt = null;
 
-    // PANIC LOCK ON ESCAPE KEY
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         activatePanicLock();
@@ -389,7 +406,6 @@
       document.getElementById("authBox").style.display = "flex";
     }
 
-    // PWA INSTALL BUTTON
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       deferredPrompt = e;
@@ -427,7 +443,7 @@
       errBox.style.display = "none";
 
       const endpoint = authMode === "login" ? "/api/login" : "/api/register";
-      const colors = ["#8b5cf6", "#ec4899", "#06b6d4", "#10b981", "#f59e0b"];
+      const colors = ["#ec4899", "#db2777", "#f43f5e", "#e879f9", "#be185d"];
       const avatar_color = colors[Math.floor(Math.random() * colors.length)];
 
       try {
@@ -469,7 +485,7 @@
       document.getElementById("meDisplayName").textContent = currentUser.display_name;
       document.getElementById("meHandle").textContent = "@" + currentUser.username;
       const av = document.getElementById("meAvatar");
-      av.style.background = currentUser.avatar_color || "#8b5cf6";
+      av.style.background = "#ec4899";
       av.innerHTML = `${currentUser.display_name[0].toUpperCase()}<div class="online-dot"></div>`;
 
       connectWS();
@@ -549,8 +565,9 @@
         const dot = u.online ? `<div class="online-dot"></div>` : "";
         const badge = u.username === "friday" ? `<span class="ai-badge">AI CORE</span>` : "";
         const statusTxt = u.online ? "Online" : formatLastSeen(u.last_seen);
+        const bgCol = u.username === "friday" ? "#db2777" : "#ec4899";
         row.innerHTML = `
-          <div class="avatar" style="background:${u.avatar_color};">${u.display_name[0].toUpperCase()}${dot}</div>
+          <div class="avatar" style="background:${bgCol};">${u.display_name[0].toUpperCase()}${dot}</div>
           <div class="user-meta">
             <div class="user-name">${u.display_name} ${badge}</div>
             <div class="user-sub">@${u.username} • ${statusTxt}</div>
@@ -562,7 +579,7 @@
     function updatePeerHeader() {
       document.getElementById("peerName").textContent = activePeer.display_name;
       const av = document.getElementById("peerAvatar");
-      av.style.background = activePeer.avatar_color || "#06b6d4";
+      av.style.background = activePeer.username === "friday" ? "#db2777" : "#ec4899";
       av.textContent = activePeer.display_name[0].toUpperCase();
 
       const st = document.getElementById("peerStatus");
@@ -686,8 +703,8 @@
       const bar = document.getElementById("storiesBar");
       bar.innerHTML = `
         <div class="story-item" onclick="createStory()">
-          <div class="story-ring" style="background:var(--cyan);">
-            <div class="story-inner" style="color:var(--cyan);font-size:20px;">+</div>
+          <div class="story-ring" style="background:linear-gradient(135deg,#db2777,#ec4899);">
+            <div class="story-inner" style="color:#f472b6;font-size:20px;">+</div>
           </div>
           <div class="story-name">Your Status</div>
         </div>
@@ -710,9 +727,9 @@
       const txt = prompt("Post a Private 24-Hour Status:");
       if (!txt || !txt.trim()) return;
       const grads = [
-        "linear-gradient(135deg, #6366f1, #ec4899)",
-        "linear-gradient(135deg, #06b6d4, #10b981)",
-        "linear-gradient(135deg, #f59e0b, #ef4444)"
+        "linear-gradient(135deg, #be185d, #ec4899)",
+        "linear-gradient(135deg, #db2777, #f43f5e)",
+        "linear-gradient(135deg, #9d174d, #f472b6)"
       ];
       await fetch("/api/stories", {
         method: "POST",
