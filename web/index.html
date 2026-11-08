@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>F.R.I.D.A.Y. // Social AI Hub</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#8b5cf6" />
+  <style>
+    :root {
+      --bg-void: #05070e;
+      --bg-panel: #0b0f1c;
+      --bg-card: #12182b;
+      --border: rgba(139, 92, 246, 0.25);
+      --accent: #8b5cf6;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --blue-tick: #38bdf8;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: var(--bg-void);
+      color: var(--text-main);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* AUTH SCREEN (Instagram Style) */
+    .auth-container {
+      width: 100%;
+      max-width: 400px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .auth-logo {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #06b6d4, #8b5cf6, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .auth-sub { text-align: center; font-size: 12px; color: var(--text-dim); margin-bottom: 6px; }
+    .auth-tabs { display: flex; background: var(--bg-card); border-radius: 10px; padding: 4px; }
+    .auth-tab {
+      flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 700;
+      border-radius: 8px; cursor: pointer; color: var(--text-dim); border: none; background: transparent;
+    }
+    .auth-tab.active { background: var(--accent); color: #fff; }
+    .auth-input {
+      width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-main); font-size: 14px; outline: none;
+    }
+    .auth-input:focus { border-color: var(--cyan); }
+    .btn-primary {
+      width: 100%; padding: 12px; border-radius: 10px; border: none;
+      background: linear-gradient(90deg, #6366f1, #ec4899);
+      color: #fff; font-weight: 800; font-size: 14px; cursor: pointer;
+    }
+    .auth-error { color: #f87171; font-size: 12px; text-align: center; display: none; }
+
+    /* MAIN APP SHELL */
+    .app-shell {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg-void);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 340px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .profile-bar {
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .me-info { display: flex; align-items: center; gap: 10px; }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0;
+      position: relative;
+    }
+    .online-dot {
+      position: absolute; bottom: 0; right: 0; width: 11px; height: 11px;
+      background: var(--emerald); border: 2px solid var(--bg-panel); border-radius: 50%;
+    }
+    .portal-links { display: flex; gap: 6px; }
+    .mini-portal {
+      font-size: 10px; padding: 5px 8px; border-radius: 6px; text-decoration: none;
+      font-weight: 700; border: 1px solid var(--border); color: var(--cyan);
+    }
+
+    /* STORIES BAR (Instagram Style) */
+    .stories-bar {
+      display: flex; gap: 12px; padding: 12px 16px; overflow-x: auto;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; }
+    .story-ring {
+      width: 52px; height: 52px; border-radius: 50%; padding: 2px;
+      background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .story-inner {
+      width: 100%; height: 100%; border-radius: 50%; background: var(--bg-card);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px;
+    }
+    .story-name { font-size: 11px; color: var(--text-dim); max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* SEARCH & DM LIST */
+    .search-box { padding: 10px 14px; }
+    .search-input {
+      width: 100%; padding: 9px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08);
+      background: var(--bg-card); color: var(--text-main); font-size: 13px; outline: none;
+    }
+    .user-list { flex: 1; overflow-y: auto; }
+    .user-row {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer;
+      transition: 0.15s; border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .user-row:hover, .user-row.active { background: rgba(139, 92, 246, 0.14); }
+    .user-meta { flex: 1; min-width: 0; }
+    .user-name { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .ai-badge {
+      font-size: 9px; background: rgba(6, 182, 212, 0.2); color: var(--cyan);
+      border: 1px solid var(--cyan); padding: 1px 6px; border-radius: 4px;
+    }
+    .user-sub { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* CHAT PANE */
+    .chat-pane { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at top, #0f162c 0%, var(--bg-void) 70%); }
+    .chat-header {
+      padding: 13px 20px; background: rgba(11, 15, 28, 0.92); border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .peer-header { display: flex; align-items: center; gap: 12px; }
+    .peer-status { font-size: 12px; color: var(--emerald); }
+    .peer-status.offline { color: var(--text-dim); }
+    .peer-status.typing { color: var(--cyan); font-weight: 700; }
+
+    .messages-area {
+      flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .msg-wrap { display: flex; flex-direction: column; max-width: 74%; position: relative; }
+    .msg-wrap.me { align-self: flex-end; align-items: flex-end; }
+    .msg-wrap.them { align-self: flex-start; align-items: flex-start; }
+
+    .reply-quote {
+      font-size: 11px; color: var(--text-dim); background: rgba(255,255,255,0.06);
+      border-left: 3px solid var(--cyan); padding: 4px 10px; border-radius: 6px; margin-bottom: 3px;
+    }
+    .bubble {
+      padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5;
+      white-space: pre-wrap; word-wrap: break-word; cursor: pointer; position: relative;
+    }
+    .msg-wrap.me .bubble {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff; border-bottom-right-radius: 4px;
+    }
+    .msg-wrap.them .bubble {
+      background: var(--bg-card); border: 1px solid rgba(255,255,255,0.08);
+      border-bottom-left-radius: 4px;
+    }
+    .msg-wrap.ai .bubble {
+      background: rgba(6, 182, 212, 0.12); border: 1px solid var(--cyan);
+    }
+    .msg-footer {
+      display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text-dim); margin-top: 3px;
+    }
+    .ticks { font-weight: 800; letter-spacing: -1px; }
+    .ticks.seen { color: var(--blue-tick); }
+    .reaction-pill {
+      background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1px 6px; font-size: 12px; margin-top: -6px; z-index: 2;
+    }
+    .quick-actions {
+      display: none; gap: 6px; background: var(--bg-panel); border: 1px solid var(--border);
+      padding: 4px 8px; border-radius: 20px; margin-top: 4px;
+    }
+    .msg-wrap:hover .quick-actions { display: flex; }
+    .act-btn { background: none; border: none; color: var(--text-main); cursor: pointer; font-size: 13px; }
+
+    /* COMPOSER */
+    .composer-wrap { padding: 12px 18px; background: var(--bg-panel); border-top: 1px solid var(--border); }
+    .reply-banner {
+      display: none; justify-content: space-between; align-items: center;
+      background: var(--bg-card); padding: 6px 12px; border-left: 3px solid var(--accent);
+      border-radius: 6px; font-size: 12px; margin-bottom: 8px;
+    }
+    .composer-row { display: flex; gap: 10px; align-items: center; }
+    .msg-input {
+      flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-main); font-size: 14px; outline: none;
+    }
+    .send-btn {
+      padding: 11px 20px; border-radius: 24px; border: none;
+      background: linear-gradient(90deg, #06b6d4, #8b5cf6);
+      color: #fff; font-weight: 800; font-size: 13px; cursor: pointer;
+    }
+
+    /* STORY MODAL */
+    .modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 999; justify-content: center; align-items: center; padding: 20px;
+    }
+    .story-card {
+      width: 100%; max-width: 360px; height: 480px; border-radius: 20px;
+      padding: 24px; display: flex; flex-direction: column; justify-content: space-between;
+      text-align: center; box-shadow: 0 0 40px rgba(0,0,0,0.8);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; }
+      .chat-pane { display: none; width: 100%; }
+      .app-shell.in-chat .sidebar { display: none; }
+      .app-shell.in-chat .chat-pane { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- AUTH SCREEN -->
+  <div class="auth-container" id="authBox">
+    <div class="auth-logo">F.R.I.D.A.Y.</div>
+    <div class="auth-sub">ARIS SOCIAL + GEMINI-CLASS AI NETWORK</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuth('login')">LOG IN</button>
+      <button class="auth-tab" id="tabReg" onclick="switchAuth('register')">CREATE ACCOUNT</button>
+    </div>
+    <input class="auth-input" id="authUser" placeholder="@username (e.g. mayank)" />
+    <input class="auth-input" id="authName" placeholder="Display Name (e.g. Mayank Tiwari)" style="display:none;" />
+    <input class="auth-input" id="authBio" placeholder="Bio (e.g. Founder @ Aris Industries)" style="display:none;" />
+    <input class="auth-input" id="authPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')submitAuth()" />
+    <div class="auth-error" id="authError"></div>
+    <button class="btn-primary" onclick="submitAuth()" id="authBtn">ENTER F.R.I.D.A.Y.</button>
+  </div>
+
+  <!-- MAIN SOCIAL APP -->
+  <div class="app-shell" id="appShell">
+    <aside class="sidebar">
+      <div class="profile-bar">
+        <div class="me-info">
+          <div class="avatar" id="meAvatar">M<div class="online-dot"></div></div>
+          <div>
+            <div style="font-weight:800;font-size:14px;" id="meDisplayName">Mayank</div>
+            <div style="font-size:11px;color:var(--cyan);" id="meHandle">@mayank</div>
+          </div>
+        </div>
+        <div class="portal-links">
+          <a class="mini-portal" href="https://titan-aris.onrender.com/" target="_blank">TITAN</a>
+          <a class="mini-portal" href="https://project-omega-m1.onrender.com/" target="_blank">OMEGA</a>
+          <button class="mini-portal" style="background:none;cursor:pointer;color:#f87171;" onclick="logout()">EXIT</button>
+        </div>
+      </div>
+
+      <!-- 24H STORIES -->
+      <div class="stories-bar" id="storiesBar"></div>
+
+      <!-- SEARCH USERS -->
+      <div class="search-box">
+        <input class="search-input" id="userSearch" placeholder="Search @username or name..." oninput="loadUsers()" />
+      </div>
+
+      <!-- DM THREADS -->
+      <div class="user-list" id="userList"></div>
+    </aside>
+
+    <main class="chat-pane">
+      <header class="chat-header">
+        <div class="peer-header">
+          <button onclick="backToList()" style="background:none;border:none;color:var(--cyan);font-size:18px;cursor:pointer;margin-right:4px;">←</button>
+          <div class="avatar" id="peerAvatar" style="background:#06b6d4;">F</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;" id="peerName">F.R.I.D.A.Y. AI</div>
+            <div class="peer-status" id="peerStatus">Online • Always Active</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);">Tip: Type <strong>@friday</strong> in any DM</div>
+      </header>
+
+      <div class="messages-area" id="messagesArea"></div>
+
+      <div class="composer-wrap">
+        <div class="reply-banner" id="replyBanner">
+          <span id="replyText">Replying to...</span>
+          <button onclick="clearReply()" style="background:none;border:none;color:#f87171;cursor:pointer;font-weight:bold;">✕</button>
+        </div>
+        <div class="composer-row">
+          <input class="msg-input" id="msgInput" placeholder="Message or type @friday..." oninput="handleTyping()" onkeydown="if(event.key==='Enter')sendMsg()" />
+          <button class="send-btn" onclick="sendMsg()">SEND</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- STORY VIEWER MODAL -->
+  <div class="modal" id="storyModal" onclick="this.style.display='none'">
+    <div class="story-card" id="storyCard" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong id="storyAuthor">@user</strong>
+        <button onclick="document.getElementById('storyModal').style.display='none'" style="background:rgba(0,0,0,0.4);border:none;color:#fff;padding:4px 10px;border-radius:8px;cursor:pointer;">✕</button>
+      </div>
+      <div id="storyBody" style="font-size:20px;font-weight:800;line-height:1.4;"></div>
+      <div id="storyTime" style="font-size:11px;opacity:0.85;"></div>
+    </div>
+  </div>
+
+  <script>
+    let authMode = "login";
+    let currentUser = null;
+    let activePeer = { username: "friday", display_name: "F.R.I.D.A.Y. AI", avatar_color: "#06b6d4", online: true };
+    let ws = null;
+    let typingTimeout = null;
+    let replyToSnippet = "";
+
+    function switchAuth(mode) {
+      authMode = mode;
+      document.getElementById("tabLogin").classList.toggle("active", mode === "login");
+      document.getElementById("tabReg").classList.toggle("active", mode === "register");
+      document.getElementById("authName").style.display = mode === "register" ? "block" : "none";
+      document.getElementById("authBio").style.display = mode === "register" ? "block" : "none";
+      document.getElementById("authBtn").textContent = mode === "login" ? "ENTER F.R.I.D.A.Y." : "CREATE ACCOUNT";
+      document.getElementById("authError").style.display = "none";
+    }
+
+    async function submitAuth() {
+      const username = document.getElementById("authUser").value.trim();
+      const password = document.getElementById("authPass").value.trim();
+      const display_name = document.getElementById("authName").value.trim();
+      const bio = document.getElementById("authBio").value.trim();
+      const errBox = document.getElementById("authError");
+      errBox.style.display = "none";
+
+      const endpoint = authMode === "login" ? "/api/login" : "/api/register";
+      const colors = ["#8b5cf6", "#ec4899", "#06b6d4", "#10b981", "#f59e0b"];
+      const avatar_color = colors[Math.floor(Math.random() * colors.length)];
+
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, display_name, bio, avatar_color })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Authentication failed");
+
+        currentUser = data;
+        localStorage.setItem("friday_user", JSON.stringify(data));
+        bootApp();
+      } catch (e) {
+        errBox.textContent = e.message;
+        errBox.style.display = "block";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("friday_user");
+      if (ws) ws.close();
+      location.reload();
+    }
+
+    function formatLastSeen(isoStr) {
+      if (!isoStr) return "Last seen recently";
+      const diffSec = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+      if (diffSec < 60) return "Last seen just now";
+      if (diffSec < 3600) return `Last seen ${Math.floor(diffSec / 60)}m ago`;
+      if (diffSec < 86400) return `Last seen ${Math.floor(diffSec / 3600)}h ago`;
+      return "Last seen " + new Date(isoStr).toLocaleDateString();
+    }
+
+    function bootApp() {
+      document.getElementById("authBox").style.display = "none";
+      document.getElementById("appShell").style.display = "flex";
+      document.getElementById("meDisplayName").textContent = currentUser.display_name;
+      document.getElementById("meHandle").textContent = "@" + currentUser.username;
+      const av = document.getElementById("meAvatar");
+      av.style.background = currentUser.avatar_color || "#8b5cf6";
+      av.innerHTML = `${currentUser.display_name[0].toUpperCase()}<div class="online-dot"></div>`;
+
+      connectWS();
+      loadUsers();
+      loadStories();
+      openChat(activePeer);
+    }
+
+    function connectWS() {
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      ws = new WebSocket(`${proto}//${location.host}/ws/${currentUser.username}`);
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "presence") {
+          loadUsers();
+          if (activePeer && data.username === activePeer.username) {
+            activePeer.online = data.online;
+            activePeer.last_seen = data.last_seen;
+            updatePeerHeader();
+          }
+        } else if (data.type === "typing") {
+          if (activePeer && (data.from === activePeer.username || (data.from === "friday" && activePeer.username === "friday"))) {
+            const st = document.getElementById("peerStatus");
+            if (data.is_typing) {
+              st.textContent = "typing...";
+              st.className = "peer-status typing";
+            } else {
+              updatePeerHeader();
+            }
+          }
+        } else if (data.type === "seen_ack") {
+          if (activePeer && data.by === activePeer.username) {
+            document.querySelectorAll(".ticks").forEach(el => {
+              el.textContent = "✓✓";
+              el.classList.add("seen");
+            });
+          }
+        } else if (data.type === "reaction") {
+          const pill = document.getElementById(`react-${data.msg_id}`);
+          if (pill) {
+            pill.textContent = data.emoji;
+            pill.style.display = "inline-block";
+          }
+        } else if (data.type === "new_message") {
+          const isRelevant =
+            (data.sender === currentUser.username && data.receiver === activePeer.username) ||
+            (data.sender === activePeer.username && data.receiver === currentUser.username) ||
+            (data.sender === "friday" && (activePeer.username === "friday" || data.receiver === currentUser.username || data.receiver === activePeer.username));
+
+          if (isRelevant) {
+            renderMessage(data);
+            if (data.sender === activePeer.username) {
+              ws.send(JSON.stringify({ type: "seen", peer: activePeer.username }));
+            }
+          }
+        }
+      };
+
+      ws.onclose = () => setTimeout(connectWS, 3000);
+    }
+
+    async function loadUsers() {
+      const q = document.getElementById("userSearch").value.trim();
+      const res = await fetch(`/api/users/${currentUser.username}?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const list = document.getElementById("userList");
+      list.innerHTML = "";
+
+      data.users.forEach(u => {
+        const row = document.createElement("div");
+        row.className = "user-row" + (activePeer && activePeer.username === u.username ? " active" : "");
+        row.onclick = () => openChat(u);
+        const dot = u.online ? `<div class="online-dot"></div>` : "";
+        const badge = u.username === "friday" ? `<span class="ai-badge">AI CORE</span>` : "";
+        const statusTxt = u.online ? "Online" : formatLastSeen(u.last_seen);
+        row.innerHTML = `
+          <div class="avatar" style="background:${u.avatar_color};">${u.display_name[0].toUpperCase()}${dot}</div>
+          <div class="user-meta">
+            <div class="user-name">${u.display_name} ${badge}</div>
+            <div class="user-sub">@${u.username} • ${statusTxt}</div>
+          </div>`;
+        list.appendChild(row);
+      });
+    }
+
+    function updatePeerHeader() {
+      document.getElementById("peerName").textContent = activePeer.display_name;
+      const av = document.getElementById("peerAvatar");
+      av.style.background = activePeer.avatar_color || "#06b6d4";
+      av.textContent = activePeer.display_name[0].toUpperCase();
+
+      const st = document.getElementById("peerStatus");
+      if (activePeer.username === "friday") {
+        st.textContent = "Online • Gemini-Class Neural Core";
+        st.className = "peer-status";
+      } else if (activePeer.online) {
+        st.textContent = "Online";
+        st.className = "peer-status";
+      } else {
+        st.textContent = formatLastSeen(activePeer.last_seen);
+        st.className = "peer-status offline";
+      }
+    }
+
+    async function openChat(userObj) {
+      activePeer = userObj;
+      document.getElementById("appShell").classList.add("in-chat");
+      updatePeerHeader();
+      loadUsers();
+
+      const res = await fetch(`/api/messages/${currentUser.username}/${userObj.username}`);
+      const data = await res.json();
+      const area = document.getElementById("messagesArea");
+      area.innerHTML = "";
+      data.messages.forEach(renderMessage);
+
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "seen", peer: userObj.username }));
+      }
+    }
+
+    function backToList() {
+      document.getElementById("appShell").classList.remove("in-chat");
+    }
+
+    function renderMessage(m) {
+      const area = document.getElementById("messagesArea");
+      const isMe = m.sender === currentUser.username;
+      const isAi = m.sender === "friday" || m.is_ai === 1;
+
+      const wrap = document.createElement("div");
+      wrap.className = `msg-wrap ${isMe ? "me" : "them"} ${isAi ? "ai" : ""}`;
+
+      const timeStr = new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      let tickHtml = "";
+      if (isMe) {
+        const tickSym = m.status === "sent" ? "✓" : "✓✓";
+        const seenCls = m.status === "seen" ? "seen" : "";
+        tickHtml = `<span class="ticks ${seenCls}">${tickSym}</span>`;
+      }
+
+      const quoteHtml = m.reply_to ? `<div class="reply-quote">↪ ${escapeHtml(m.reply_to)}</div>` : "";
+      const reactStyle = m.reaction ? "inline-block" : "none";
+
+      wrap.innerHTML = `
+        ${quoteHtml}
+        <div class="bubble" ondblclick="sendReact('${m.id}', '❤️')">${escapeHtml(m.content)}</div>
+        <div class="reaction-pill" id="react-${m.id}" style="display:${reactStyle};">${m.reaction || ""}</div>
+        <div class="msg-footer">${isAi && !isMe ? "⚡ F.R.I.D.A.Y. • " : ""}${timeStr} ${tickHtml}</div>
+        <div class="quick-actions">
+          <button class="act-btn" onclick="sendReact('${m.id}', '❤️')">❤️</button>
+          <button class="act-btn" onclick="sendReact('${m.id}', '😂')">😂</button>
+          <button class="act-btn" onclick="sendReact('${m.id}', '🔥')">🔥</button>
+          <button class="act-btn" onclick="setReply(${JSON.stringify(m.content.slice(0, 60))})">↩ Reply</button>
+        </div>
+      `;
+      area.appendChild(wrap);
+      area.scrollTop = area.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function setReply(snippet) {
+      replyToSnippet = snippet;
+      document.getElementById("replyText").textContent = "Replying to: " + snippet;
+      document.getElementById("replyBanner").style.display = "flex";
+      document.getElementById("msgInput").focus();
+    }
+
+    function clearReply() {
+      replyToSnippet = "";
+      document.getElementById("replyBanner").style.display = "none";
+    }
+
+    function sendReact(msgId, emoji) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "react", msg_id: msgId, emoji: emoji, peer: activePeer.username }));
+      }
+    }
+
+    function handleTyping() {
+      if (!ws || ws.readyState !== WebSocket.OPEN || !activePeer) return;
+      ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: true }));
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: false }));
+      }, 1500);
+    }
+
+    function sendMsg() {
+      const inp = document.getElementById("msgInput");
+      const content = inp.value.trim();
+      if (!content || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+      ws.send(JSON.stringify({
+        type: "message",
+        to: activePeer.username,
+        content: content,
+        reply_to: replyToSnippet
+      }));
+      inp.value = "";
+      clearReply();
+    }
+
+    /* 24-HOUR STORIES */
+    async function loadStories() {
+      const res = await fetch("/api/stories");
+      const data = await res.json();
+      const bar = document.getElementById("storiesBar");
+      bar.innerHTML = `
+        <div class="story-item" onclick="createStory()">
+          <div class="story-ring" style="background:var(--cyan);">
+            <div class="story-inner" style="color:var(--cyan);font-size:20px;">+</div>
+          </div>
+          <div class="story-name">Your Story</div>
+        </div>
+      `;
+      data.stories.forEach(s => {
+        const item = document.createElement("div");
+        item.className = "story-item";
+        item.onclick = () => viewStory(s);
+        item.innerHTML = `
+          <div class="story-ring">
+            <div class="story-inner">${s.display_name[0].toUpperCase()}</div>
+          </div>
+          <div class="story-name">@${s.username}</div>
+        `;
+        bar.appendChild(item);
+      });
+    }
+
+    async function createStory() {
+      const txt = prompt("Post a 24-Hour Status / Story:");
+      if (!txt || !txt.trim()) return;
+      const grads = [
+        "linear-gradient(135deg, #6366f1, #ec4899)",
+        "linear-gradient(135deg, #06b6d4, #10b981)",
+        "linear-gradient(135deg, #f59e0b, #ef4444)"
+      ];
+      await fetch("/api/stories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: currentUser.username,
+          text_content: txt.trim(),
+          bg_gradient: grads[Math.floor(Math.random() * grads.length)]
+        })
+      });
+      loadStories();
+    }
+
+    function viewStory(s) {
+      document.getElementById("storyCard").style.background = s.bg_gradient;
+      document.getElementById("storyAuthor").textContent = `${s.display_name} (@${s.username})`;
+      document.getElementById("storyBody").textContent = s.text_content;
+      document.getElementById("storyTime").textContent = "Posted " + formatLastSeen(s.created_at).replace("Last seen ", "");
+      document.getElementById("storyModal").style.display = "flex";
+    }
+
+    // Auto-restore session
+    const saved = localStorage.getItem("friday_user");
+    if (saved) {
+      currentUser = JSON.parse(saved);
+      bootApp();
+    }
+  </script>
+</body>
+</html>
