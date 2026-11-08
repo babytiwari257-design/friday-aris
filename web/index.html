@@ -14,7 +14,6 @@
       --bg-card: #120b18;
       --border: rgba(236, 72, 153, 0.32);
       --accent: #ec4899;
-      --pink-bright: #f43f5e;
       --emerald: #10b981;
       --cyan: #00f0ff;
       --text-main: #fdf2f8;
@@ -72,7 +71,7 @@
     }
     .auth-error { color: #fb7185; font-size: 12px; text-align: center; display: none; }
 
-    /* MAIN APP - PURE BLACK & NEON PINK */
+    /* MAIN APP */
     .app-shell { display: none; width: 100vw; height: 100vh; background: var(--bg-void); }
     .sidebar {
       width: 350px; background: var(--bg-panel); border-right: 1px solid var(--border);
@@ -97,7 +96,6 @@
       flex: 1; font-size: 11px; padding: 7px 6px; border-radius: 8px; text-decoration: none;
       font-weight: 800; text-align: center; border: 1px solid var(--border); cursor: pointer;
     }
-    .btn-download { background: var(--accent); color: #fff; border-color: var(--accent); display: none; }
     .btn-panic { background: rgba(244, 63, 94, 0.18); color: #fda4af; border-color: #f43f5e; }
     .btn-alpha { background: rgba(0, 240, 255, 0.14); color: var(--cyan); border-color: var(--cyan); }
     .btn-link { background: rgba(236, 72, 153, 0.1); color: #f472b6; }
@@ -137,9 +135,13 @@
       font-size: 9px; background: rgba(236, 72, 153, 0.22); color: #f472b6;
       border: 1px solid var(--accent); padding: 1px 6px; border-radius: 4px;
     }
+    .req-badge {
+      font-size: 9px; background: rgba(16, 185, 129, 0.2); color: #34d399;
+      border: 1px solid #10b981; padding: 1px 6px; border-radius: 4px;
+    }
     .user-sub { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .chat-pane { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at top, #170a1e 0%, #030305 68%); }
+    .chat-pane { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at top, #170a1e 0%, #030305 68%); position: relative; }
     .chat-header {
       padding: 13px 20px; background: rgba(9, 6, 12, 0.94); border-bottom: 1px solid var(--border);
       display: flex; justify-content: space-between; align-items: center;
@@ -149,10 +151,30 @@
     .peer-status.offline { color: var(--text-dim); }
     .peer-status.typing { color: #f472b6; font-weight: 700; }
 
-    .header-btns { display: flex; gap: 8px; align-items: center; }
-    .alpha-call-trigger {
-      background: rgba(0, 240, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan);
-      padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;
+    .conn-pill {
+      font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 800;
+      background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981;
+    }
+    .conn-pill.reconnecting {
+      background: rgba(245, 158, 11, 0.18); color: #fbbf24; border-color: #f59e0b;
+    }
+
+    /* INSTAGRAM-STYLE FOLLOW LOCK SCREEN */
+    .follow-lock-box {
+      display: none; flex: 1; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center; padding: 32px; gap: 14px;
+    }
+    .lock-icon {
+      width: 68px; height: 68px; border-radius: 50%; border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center; font-size: 28px;
+      background: rgba(236, 72, 153, 0.12); box-shadow: 0 0 25px rgba(236, 72, 153, 0.25);
+    }
+    .follow-btn {
+      padding: 11px 26px; border-radius: 22px; border: none; font-weight: 800; font-size: 13px;
+      background: linear-gradient(90deg, #db2777, #ec4899); color: #fff; cursor: pointer;
+    }
+    .follow-btn.secondary {
+      background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border); color: var(--text-dim);
     }
 
     .messages-area {
@@ -168,7 +190,7 @@
     }
     .bubble {
       padding: 10px 14px; border-radius: 16px; font-size: 14.5px; line-height: 1.5;
-      white-space: pre-wrap; word-wrap: break-word; cursor: pointer; position: relative;
+      white-space: pre-wrap; word-wrap: break-word; cursor: pointer;
     }
     .msg-wrap.me .bubble {
       background: linear-gradient(135deg, #be185d, #ec4899);
@@ -234,7 +256,7 @@
 </head>
 <body>
 
-  <!-- JEE STUDY DECOY SCREEN (ACTIVATES ON ESC OR PANIC LOCK) -->
+  <!-- JEE STUDY DECOY SCREEN -->
   <div class="jee-decoy" id="jeeDecoy">
     <h1>Class 11 JEE Physics — Rotational Dynamics & Gravitation Formula Revision</h1>
     <div class="jee-card">
@@ -287,13 +309,10 @@
               <div style="font-size:11px;color:#f472b6;" id="meHandle">@handle</div>
             </div>
           </div>
-          <button class="action-btn btn-panic" style="flex:0;padding:6px 10px;" onclick="activatePanicLock()" title="Press ESC anytime">🔒 HIDE (ESC)</button>
+          <button class="action-btn btn-panic" style="flex:0;padding:6px 10px;" onclick="activatePanicLock()">🔒 ESC</button>
         </div>
 
         <div class="sys-actions">
-          <button class="action-btn btn-download" id="installBtn" onclick="installDesktopApp()">⬇ APP</button>
-          <button class="action-btn btn-alpha" onclick="launchAlphaApp()">◈ A.L.P.H.A.</button>
-          <a class="action-btn btn-link" href="https://titan-aris.onrender.com/" target="_blank">TITAN</a>
           <a class="action-btn btn-link" href="https://project-omega-m1.onrender.com/" target="_blank">OMEGA</a>
           <button class="action-btn btn-exit" onclick="logout()">LOCK</button>
         </div>
@@ -318,15 +337,25 @@
             <div class="peer-status" id="peerStatus">Online • Always Active</div>
           </div>
         </div>
-        <div class="header-btns">
-          <button class="alpha-call-trigger" onclick="launchAlphaApp()" title="Launch A.L.P.H.A. Video/Voice Call">📹 A.L.P.H.A. CALL</button>
-          <button onclick="activatePanicLock()" style="background:rgba(244,63,94,0.18);border:1px solid #f43f5e;color:#fda4af;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;">🔒 STEALTH</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="conn-pill" id="connPill">● SYNCED</span>
+          <button onclick="activatePanicLock()" style="background:rgba(244,63,94,0.18);border:1px solid #f43f5e;color:#fda4af;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;">🔒 HIDE</button>
         </div>
       </header>
 
+      <!-- INSTAGRAM-STYLE PRIVATE FOLLOW LOCK OVERLAY -->
+      <div class="follow-lock-box" id="followLockBox">
+        <div class="lock-icon">🔒</div>
+        <h3 id="lockTitle" style="font-size:18px;">This Account is Private</h3>
+        <p id="lockDesc" style="font-size:13px;color:var(--text-dim);max-width:320px;line-height:1.5;">
+          Follow this account and wait for approval before sending private messages.
+        </p>
+        <div id="lockActions" style="display:flex;gap:10px;margin-top:6px;"></div>
+      </div>
+
       <div class="messages-area" id="messagesArea"></div>
 
-      <div class="composer-wrap">
+      <div class="composer-wrap" id="composerWrap">
         <div class="reply-banner" id="replyBanner">
           <span id="replyText">Replying to...</span>
           <button onclick="clearReply()" style="background:none;border:none;color:#fb7185;cursor:pointer;font-weight:bold;">✕</button>
@@ -354,22 +383,23 @@
   <script>
     let authMode = "login";
     let currentUser = null;
-    let activePeer = { username: "friday", display_name: "F.R.I.D.A.Y. AI", avatar_color: "#ec4899", online: true };
+    let activePeer = { username: "friday", display_name: "F.R.I.D.A.Y. AI", avatar_color: "#ec4899", online: true, follow_state: "accepted" };
     let ws = null;
+    let pingTimer = null;
+    let outgoingQueue = [];
     let typingTimeout = null;
     let replyToSnippet = "";
-    let deferredPrompt = null;
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") activatePanicLock();
     });
 
-    function launchAlphaApp() {
-      const room = activePeer && activePeer.username !== "friday"
-        ? [currentUser.username, activePeer.username].sort().join("-") + "-01"
-        : "aris-sync-01";
-      window.open(`https://alpha-aris.onrender.com/?room=${encodeURIComponent(room)}&install=1`, "_blank");
-    }
+    // Auto-reconnect immediately when user unlocks phone or switches back to tab
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && currentUser && (!ws || ws.readyState !== WebSocket.OPEN)) {
+        connectWS();
+      }
+    });
 
     function activatePanicLock() {
       sessionStorage.removeItem("friday_user");
@@ -382,21 +412,6 @@
     function unlockFromDecoy() {
       document.getElementById("jeeDecoy").style.display = "none";
       document.getElementById("authBox").style.display = "flex";
-    }
-
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const btn = document.getElementById("installBtn");
-      if (btn) btn.style.display = "inline-block";
-    });
-
-    async function installDesktopApp() {
-      if (!deferredPrompt) return;
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") document.getElementById("installBtn").style.display = "none";
-      deferredPrompt = null;
     }
 
     function switchAuth(mode) {
@@ -466,12 +481,47 @@
       openChat(activePeer);
     }
 
+    function setConnStatus(ok) {
+      const pill = document.getElementById("connPill");
+      if (ok) {
+        pill.textContent = "● SYNCED";
+        pill.className = "conn-pill";
+      } else {
+        pill.textContent = "↻ RECONNECTING";
+        pill.className = "conn-pill reconnecting";
+      }
+    }
+
     function connectWS() {
+      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+      setConnStatus(false);
       const proto = location.protocol === "https:" ? "wss:" : "ws:";
       ws = new WebSocket(`${proto}//${location.host}/ws/${currentUser.username}`);
+
+      ws.onopen = () => {
+        setConnStatus(true);
+        // Flush any queued messages immediately!
+        while (outgoingQueue.length > 0) {
+          ws.send(JSON.stringify(outgoingQueue.shift()));
+        }
+        clearInterval(pingTimer);
+        pingTimer = setInterval(() => {
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "ping" }));
+          }
+        }, 20000);
+      };
+
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        if (data.type === "presence") {
+        if (data.type === "pong") return;
+
+        if (data.type === "follow_update") {
+          loadUsers();
+          if (activePeer && data.from === activePeer.username) {
+            openChat(activePeer);
+          }
+        } else if (data.type === "presence") {
           loadUsers();
           if (activePeer && data.username === activePeer.username) {
             activePeer.online = data.online;
@@ -498,11 +548,20 @@
             (data.sender === "friday" && (activePeer.username === "friday" || data.receiver === currentUser.username || data.receiver === activePeer.username));
           if (isRelevant) {
             renderMessage(data);
-            if (data.sender === activePeer.username) ws.send(JSON.stringify({ type: "seen", peer: activePeer.username }));
+            if (data.sender === activePeer.username && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ type: "seen", peer: activePeer.username }));
+            }
           }
         }
       };
-      ws.onclose = () => { if (sessionStorage.getItem("friday_user")) setTimeout(connectWS, 3000); };
+
+      ws.onclose = () => {
+        setConnStatus(false);
+        clearInterval(pingTimer);
+        if (sessionStorage.getItem("friday_user")) {
+          setTimeout(connectWS, 1500);
+        }
+      };
     }
 
     async function loadUsers() {
@@ -516,7 +575,11 @@
         row.className = "user-row" + (activePeer && activePeer.username === u.username ? " active" : "");
         row.onclick = () => openChat(u);
         const dot = u.online ? `<div class="online-dot"></div>` : "";
-        const badge = u.username === "friday" ? `<span class="ai-badge">AI CORE</span>` : "";
+        let badge = "";
+        if (u.username === "friday") badge = `<span class="ai-badge">AI CORE</span>`;
+        else if (u.follow_state === "incoming_pending") badge = `<span class="req-badge">REQUEST</span>`;
+        else if (u.follow_state !== "accepted") badge = `<span class="ai-badge" style="opacity:0.7;">PRIVATE</span>`;
+
         const statusTxt = u.online ? "Online" : formatLastSeen(u.last_seen);
         const bgCol = u.username === "friday" ? "#db2777" : "#ec4899";
         row.innerHTML = `
@@ -545,12 +608,80 @@
       document.getElementById("appShell").classList.add("in-chat");
       updatePeerHeader();
       loadUsers();
+
       const res = await fetch(`/api/messages/${currentUser.username}/${userObj.username}`);
       const data = await res.json();
-      const area = document.getElementById("messagesArea");
-      area.innerHTML = "";
+      const fState = data.follow_state || "accepted";
+
+      const lockBox = document.getElementById("followLockBox");
+      const msgArea = document.getElementById("messagesArea");
+      const compWrap = document.getElementById("composerWrap");
+
+      if (fState !== "accepted") {
+        msgArea.style.display = "none";
+        compWrap.style.display = "none";
+        lockBox.style.display = "flex";
+        renderFollowLock(userObj, fState);
+        return;
+      }
+
+      lockBox.style.display = "none";
+      msgArea.style.display = "flex";
+      compWrap.style.display = "block";
+      msgArea.innerHTML = "";
       data.messages.forEach(renderMessage);
-      if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "seen", peer: userObj.username }));
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "seen", peer: userObj.username }));
+      }
+    }
+
+    function renderFollowLock(peer, state) {
+      const title = document.getElementById("lockTitle");
+      const desc = document.getElementById("lockDesc");
+      const actions = document.getElementById("lockActions");
+
+      if (state === "none") {
+        title.textContent = `@${peer.username} is Private`;
+        desc.textContent = "Send a follow request to unlock encrypted messaging with this account.";
+        actions.innerHTML = `<button class="follow-btn" onclick="sendFollowReq('${peer.username}')">+ SEND FOLLOW REQUEST</button>`;
+      } else if (state === "outgoing_pending") {
+        title.textContent = "Follow Request Sent";
+        desc.textContent = `Waiting for @${peer.username} to accept your request. Chat unlocks automatically once accepted.`;
+        actions.innerHTML = `<button class="follow-btn secondary" onclick="cancelFollow('${peer.username}')">CANCEL REQUEST</button>`;
+      } else if (state === "incoming_pending") {
+        title.textContent = `@${peer.username} Wants to Follow You`;
+        desc.textContent = "Accept their request to unlock private messages between both accounts.";
+        actions.innerHTML = `
+          <button class="follow-btn" onclick="acceptFollow('${peer.username}')">✓ ACCEPT</button>
+          <button class="follow-btn secondary" onclick="cancelFollow('${peer.username}')">✕ REJECT</button>`;
+      }
+    }
+
+    async function sendFollowReq(target) {
+      await fetch("/api/follow/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ follower: currentUser.username, following: target })
+      });
+      openChat(activePeer);
+    }
+
+    async function acceptFollow(requester) {
+      await fetch("/api/follow/accept", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ follower: requester, following: currentUser.username })
+      });
+      openChat(activePeer);
+    }
+
+    async function cancelFollow(other) {
+      await fetch("/api/follow/reject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ follower: currentUser.username, following: other })
+      });
+      openChat(activePeer);
     }
 
     function backToList() { document.getElementById("appShell").classList.remove("in-chat"); }
@@ -593,15 +724,25 @@
       if (!ws || ws.readyState !== WebSocket.OPEN || !activePeer) return;
       ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: true }));
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: false })), 1500);
+      typingTimeout = setTimeout(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "typing", to: activePeer.username, is_typing: false }));
+      }, 1500);
     }
+
     function sendMsg() {
       const inp = document.getElementById("msgInput");
       const content = inp.value.trim();
-      if (!content || !ws || ws.readyState !== WebSocket.OPEN) return;
-      ws.send(JSON.stringify({ type: "message", to: activePeer.username, content: content, reply_to: replyToSnippet }));
+      if (!content) return;
+      const packet = { type: "message", to: activePeer.username, content: content, reply_to: replyToSnippet };
       inp.value = "";
       clearReply();
+
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(packet));
+      } else {
+        outgoingQueue.push(packet);
+        connectWS();
+      }
     }
 
     async function loadStories() {
